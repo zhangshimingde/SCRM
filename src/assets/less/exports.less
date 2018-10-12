@@ -1,0 +1,83 @@
+﻿@blue:#3079D5;
+@gray:#D9D9D9;
+.clear:after{
+	content: "";
+	display: block;
+	clear: both;
+	height: 0;
+}
+.text-overflow{
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+.overflow-touch{
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.weui-cells.vux-search_show{
+	.overflow-touch;
+}
+.block{
+	display: block !important;
+}
+.line1px(@color:@gray){
+	position: relative;
+	&:after{
+    content: " ";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 1px;
+    border-bottom: 1px solid @color;
+    color: @color;
+    -webkit-transform-origin: 0 100%;
+    transform-origin: 0 100%;
+    -webkit-transform: scaleY(0.5);
+    transform: scaleY(0.5);
+	}
+}
+.line1pxt(@color:@gray){
+	position: relative;
+	&:before{
+        content: " ";
+	    position: absolute;
+	    left: 0;
+	    top: 0;
+	    right: 0;
+	    height: 1px;
+	    border-top: 1px solid @color;
+	    color: @color;
+	    -webkit-transform-origin: 0 0;
+	    transform-origin: 0 0;
+	    -webkit-transform: scaleY(0.5);
+	    transform: scaleY(0.5);
+	}
+}
+.cm-gradient(@start:#00D0FF,@end:#0992FF){
+	background: @start;
+	background: -webkit-linear-gradient(left top, @start,@end); /* Safari 5.1 - 6.0 */  
+	background: -o-linear-gradient(bottom right,@start,@end); /* Opera 11.1 - 12.0 */  
+	background: -moz-linear-gradient(bottom right,@start,@end); /* Firefox 3.6 - 15 */  
+	background: linear-gradient(to bottom right, @start,@end); /* 标准的语法 */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr=@start, endColorstr=@end,GradientType=0 ); 
+}
+.border-box{
+	 -moz-box-sizing: border-box;  
+     -webkit-box-sizing: border-box; 
+     -o-box-sizing: border-box; 
+     -ms-box-sizing: border-box; 
+     box-sizing: border-box; 
+}
+.more{
+	color: @blue;
+	margin-right: 20px;
+}
+.border-radius(@r:5px){
+	border-radius: @r;
+}
+.cm-padding{
+	padding: 10px;
+}
+@cmmg:15px;
