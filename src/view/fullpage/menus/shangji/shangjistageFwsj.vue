@@ -4,10 +4,10 @@
       <div class="stage-content relative" v-if="!loading">
         <tab0 v-show="index==0" :itemData="dataList[0]" :currentIndex="currentIndex"  @prev="prev" @next="next" @closeSj="closeSj"></tab0>
         <tab1 v-show="index==1" :itemData="dataList[1]" @prev="prev" @next="next" @closeSj="closeSj"></tab1>
-        <!-- <tab2 v-show="index==2" :oppType="oppType" :itemData="dataList[2]" @prev="prev" @next="next" @closeSj="closeSj"></tab2>
-        <tab3 v-show="index==3" :itemData="dataList[3]" @prev="prev" @next="next" @closeSj="closeSj"></tab3> -->
-        <tab4 v-show="index==2" :itemData="dataList[4]" @prev="prev" @next="next" @closeSj="closeSj"></tab4>
-        <tab5 v-show="index==3" :itemData="dataList[5]" @prev="prev" @next="next" @closeSj="closeSj"></tab5>
+        <!-- <tab2 v-show="index==2" :oppType="oppType" :itemData="dataList[2]" @prev="prev" @next="next" @closeSj="closeSj"></tab2> -->
+        <tab3 v-show="index==2" :itemData="dataList[3]" @prev="prev" @next="next" @closeSj="closeSj"></tab3>
+        <tab4 v-show="index==3" :itemData="dataList[4]" @prev="prev" @next="next" @closeSj="closeSj"></tab4>
+        <tab5 v-show="index==4" :itemData="dataList[5]" @prev="prev" @next="next" @closeSj="closeSj"></tab5>
         <div class="masks absolute" v-show="index!=currentIndex" @click="alt" v-if="index!=0"></div>
         <div class="masks-foot fixed" v-show="index!=currentIndex"  @click="alt"></div>
       </div>
@@ -63,9 +63,9 @@ export default {
             case "ec4e9fff-85c7-4908-8dcc-8b20466ae3ce": this.index=0;break;
             case "dd4bc757-4e96-43dc-9f8a-5af15bc1e91e": this.index=1;break;
             // case "25fcd794-bc55-4080-a799-33151301e9a9": this.index=2;break;
-            // case "b61c8585-7e93-4268-8322-46ff49bbec3a": this.index=3;break;
-            case "01bd821c-613f-4502-9f65-a3475d7bfbc7": this.index=2;break;
-            case "1a042316-2660-4581-9384-b1fc89878760": this.index=3;break;
+            case "b61c8585-7e93-4268-8322-46ff49bbec3a": this.index=2;break;
+            case "01bd821c-613f-4502-9f65-a3475d7bfbc7": this.index=3;break;
+            case "1a042316-2660-4581-9384-b1fc89878760": this.index=4;break;
           }
 
 
@@ -81,23 +81,23 @@ export default {
             case 0: stageId="ec4e9fff-85c7-4908-8dcc-8b20466ae3ce";break;
             case 1: stageId="dd4bc757-4e96-43dc-9f8a-5af15bc1e91e";break;
             // case 2: stageId="25fcd794-bc55-4080-a799-33151301e9a9";break;
-            // case 3: stageId="b61c8585-7e93-4268-8322-46ff49bbec3a";break;
-            case 2: stageId="01bd821c-613f-4502-9f65-a3475d7bfbc7";break;
-            case 3: stageId="1a042316-2660-4581-9384-b1fc89878760";break;
+            case 2: stageId="b61c8585-7e93-4268-8322-46ff49bbec3a";break;
+            case 3: stageId="01bd821c-613f-4502-9f65-a3475d7bfbc7";break;
+            case 4: stageId="1a042316-2660-4581-9384-b1fc89878760";break;
           }
 
         // console.log(stageId)
-        if(this.index==2){  //从成交关闭返回上一阶段的时候，要清空合同
+        if(this.index==3){  //从成交关闭返回上一阶段的时候，要清空合同
           this.changeStage(stageId,true)
         }else{
           this.changeStage(stageId)
         }
         // end
       }
-      
+
     },
     next(){  //进入下阶段
-      if(this.index<=2){
+      if(this.index<=3){
         this.index++;
         // ajax提交
          var stageId;
@@ -105,9 +105,9 @@ export default {
             case 0: stageId="ec4e9fff-85c7-4908-8dcc-8b20466ae3ce";break;
             case 1: stageId="dd4bc757-4e96-43dc-9f8a-5af15bc1e91e";break;
             // case 2: stageId="25fcd794-bc55-4080-a799-33151301e9a9";break;
-            // case 3: stageId="b61c8585-7e93-4268-8322-46ff49bbec3a";break;
-            case 2: stageId="01bd821c-613f-4502-9f65-a3475d7bfbc7";break;
-            case 3: stageId="1a042316-2660-4581-9384-b1fc89878760";break;
+            case 2: stageId="b61c8585-7e93-4268-8322-46ff49bbec3a";break;
+            case 3: stageId="01bd821c-613f-4502-9f65-a3475d7bfbc7";break;
+            case 4: stageId="1a042316-2660-4581-9384-b1fc89878760";break;
           }
 
         this.changeStage(stageId)

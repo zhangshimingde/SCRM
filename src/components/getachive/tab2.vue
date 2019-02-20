@@ -12,7 +12,8 @@
           <i class="iconfont icon-qiehuan" style="margin-right:4px"></i><span style="color:rgb(9, 146, 255)"  @click="dates='year'">按年度</span>
         </span>
       </p>
-      <div class="cm-padding data-show" v-if="dates!='month'&&rankType!='员工'" style="padding-top:0;background:white">
+      <!-- <div class="cm-padding data-show" v-if="dates!='month'&&rankType!='员工'" style="padding-top:0;background:white"> -->
+      <div class="cm-padding data-show" v-if="rankType!='员工'" style="padding-top:0;background:white">
         <div class="text_center">
           <span class="digital">{{ hkmb | fix2}}</span> <br>
           <span class="content">回款目标</span>
@@ -26,13 +27,13 @@
           <span class="content">完成比例</span>
         </div>
       </div>
-      <div class="cm-padding " v-if="dates=='month'&&rankType!='员工'" style="padding-top:0;background:white">
+      <!-- <div class="cm-padding " v-if="dates=='month'&&rankType!='员工'" style="padding-top:0;background:white">
 
           <span class="content" style="color:#787878">完成回款合计：</span>
           <span class="digital" style="font-size: 1.2rem;color: #F4333C;">{{ ydTotal | fix2}}</span> <br>
 
 
-      </div>
+      </div> -->
       <x-table :cell-bordered="false" style="background-color:#fff;">
         <thead>
           <tr>
@@ -190,10 +191,31 @@ export default {
                   this.wchk=res.Data.JE;
               })
           }else{
-            this.ydTotal=0;
-            this.tableData.map((el)=>{
-              this.ydTotal+=el.AmountCashMoney
+            // this.ydTotal=0;
+            // this.tableData.map((el)=>{
+            //   this.ydTotal+=el.AmountCashMoney
+            // })
+
+            let tempYear=Number(this.datePrama.split("-")[0]);
+            let tempMonth=Number(this.datePrama.split("-")[1]);
+            let endMonth=tempMonth==12?1:tempMonth+1;
+            let endYear=tempMonth==12?tempYear+1:tempYear;
+            // alert(tempYear+'-'+tempMonth+","+endYear+"-"+endMonth);return;
+            this.$http.post('/api/EnergizeSaleBulletin/GetQYHKDashBoardSum',{
+                BuGUID:this.id,
+                DateString:tempYear,
+                ReportType:"HK",
+                StartTime:tempYear+'-'+tempMonth+"-1",
+                EndTime:endYear+"-"+endMonth+"-1"
             })
+            .then((res)=>{
+                this.loading=false;
+                console.log(res);
+                this.hkmb=res.Data.MB;
+                this.wchk=res.Data.JE;
+            })
+
+
           }
        })
 

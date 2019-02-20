@@ -42,7 +42,7 @@
             </p>
           </template>
         </div>
-        
+
         <div v-transfer-dom>
           <popup  v-model="showCondition" :popup-style="{background:'white'}" position="right" width="80%">
             <condition @finish="conditionFinish" :areaId="areaId"></condition>
@@ -64,7 +64,7 @@ export default {
     Search ,PopupRadio , Group,list,InlineLoading,Popup,condition,Tab, TabItem
   },
   mounted(){
-   
+
     var inner=document.getElementById('scroll-box');
     var outer=document.getElementById('scroll-wrap');
     var _this=this;
@@ -115,7 +115,7 @@ export default {
       this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
         FullName:this.key,
         PageIndex:this.page,
-        PageSize:50,
+        PageSize:15,
         KHCompanyLevelCodeMultipleChoice:this.condition.khLevel,
         ZbSortItemGUIDMultipleChoice:this.condition.levelOne,
         QySortItemGUIDMultipleChoice:this.condition.levelTwo,
@@ -125,7 +125,7 @@ export default {
       })
       .then((res)=>{
         // console.log(res.Data);
-        
+
         this.totalPage=Math.ceil(res.Data.PagingInfo.TotalRecords/res.Data.PagingInfo.PageSize);
         this.loading = false;
         this.loading2=false;
@@ -136,11 +136,11 @@ export default {
             document.getElementById('scroll-wrap').scrollTop=0;
           }
         }
-        
+
         res.Data.SOListDataTable.map((el)=>{
            this.datas.push(el);
         })
-       
+
       })
     },
     conditionFinish(params){ //筛选条件选择完毕
@@ -226,7 +226,7 @@ export default {
 
         }
       }
-      
+
     }
   }
   .content{
@@ -238,7 +238,7 @@ export default {
   .weui-search-bar:after,.weui-search-bar:before{
     border: none
   }
-  
+
 }
 .pop-title{
   padding: 10px 15px;

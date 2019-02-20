@@ -57,7 +57,7 @@
           <!-- 发表记录，评论 -->
           <div v-transfer-dom>
             <popup v-model="isPublish" @on-hide="openYy=false"  :popup-style="{background:'white',zIndex:10}" position="bottom" height="50%">
-              <publish @pubFinish="pubFinish" :openYy="openYy"></publish>
+              <publish :chosePoepleType='1' @pubFinish="pubFinish" :openYy="openYy"></publish>
             </popup>
           </div>
         </div>

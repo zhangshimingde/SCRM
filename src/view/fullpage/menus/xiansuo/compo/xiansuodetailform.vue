@@ -16,8 +16,8 @@
               <x-input title="联系方式"  v-model="contactPhone" @on-change="updateFieldBase" placeholder="必填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('xstype')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('xstype')">
             <span class="left banner">线索类型</span>
             <div class="right content">
               <span v-for="(item,index) in xstype" :key="index">
@@ -26,20 +26,20 @@
             </div>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('way')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('way')">
             <span class="left banner">来源渠道</span>
             <span class="right content">{{way.name}}</span>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('area')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('area')">
             <span class="left banner">所属区域</span>
             <span class="right content">{{area.name}}</span>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('product')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix " :class="canEdit?'readw':'reado'" @click="openSelect('products')">
             <span class="left banner">需求产品</span>
             <div class="right content">
               <span v-for="(item,index) in products" :key="index">
@@ -49,13 +49,13 @@
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix sh readw">
-              <x-textarea title="需求描述" v-model="productsinfo" @on-change="updateFieldBase" placeholder="用文字对客户需求简单描述(必填)"></x-textarea>
+          <div class="form-item clearfix sh" :class="canEdit?'readw':'reado'">
+              <x-textarea title="需求描述" :readonly="!canEdit" v-model="productsinfo" @on-change="updateFieldBase" placeholder="用文字对客户需求简单描述(必填)"></x-textarea>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix sh readw">
-              <x-textarea title="需求分析" v-model="fxinfo" @on-change="updateFieldBase('线索需求分析')" placeholder="需求产生的原因(管理驱动、1W意识、个人需求)和采购计划安排"></x-textarea>
+          <div class="form-item clearfix sh" :class="canEdit?'readw':'reado'">
+              <x-textarea title="需求分析" :readonly="!canEdit" v-model="fxinfo" @on-change="updateFieldBase('线索需求分析')" placeholder="需求产生的原因(管理驱动、1W意识、个人需求)和采购计划安排"></x-textarea>
           </div>
         </cell-box>
       </group>
@@ -66,11 +66,19 @@
             <p class="title">客户信息</p>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="chosekehu=true">
+        <cell-box>
+          <div class="form-item clearfix reado"  v-if="kehu.id!='00000000-0000-0000-0000-000000000000'">
             <span class="left banner">客户名称</span>
-            <span class="right content">{{kehu.name}}</span>
+            <router-link :to="{name:'kehudetail',params:{id:kehu.id}}" class="right content" style="color:#3079D5">{{kehu.name}}</router-link>
           </div>
+
+          <template v-else>
+              <div class="form-item clearfix" style="width:90%" >
+                <x-input  title='客户名称' v-model="kehu.name" placeholder="必填" :show-clear="true" text-align="right"></x-input>
+              </div>
+              <i class="iconfont icon-xinzenglianxiren" @click="chosekehu=true" style="color:#3079D5;font-size:1.2rem"></i>
+          </template>
+
         </cell-box>
         <cell-box>
           <div class="form-item clearfix qy readw" style="padding-right:0">
@@ -135,7 +143,7 @@
 
       <div v-transfer-dom>
         <popup v-model="cmParamChose" :popup-style="{background:'white'}" position="right" width="80%">
-          <danxs :prama="cmParamList" :canEmpty="canEmpty" :count="count"  @choseFinish="cmChoseFinish"></danxs>
+          <danxs :prama="cmParamList" :beChose="beChose" :canEmpty="canEmpty" :count="count"  @choseFinish="cmChoseFinish"></danxs>
         </popup>
       </div>
     </form>
@@ -152,7 +160,9 @@ export default {
   },
   created(){
     this.getInfoData();
-    // this.setData();
+    this.$cmBus.$on('freshAreaClue',()=>{
+      this.getBaseClueInfo();
+    })
   },
   directives: {
     TransferDom
@@ -208,8 +218,11 @@ export default {
         name:"必填",
         id:""
       },
+      kehuTemp:{
+        name:"必填",
+        id:""
+      },
       khType:"",
-      khguid:"",
       customertypeid:"",
       tel:"",
       city:"",
@@ -220,26 +233,13 @@ export default {
       extraInfo:{
         createPeople:"",
         createTime:""
-      }
+      },
+      beChose:[],
+      canEdit:false,
     }
   },
   methods:{
-    setData(){
-      // 客户信息填充
-      var khData=this.detailInfo;
-      this.kehu={
-        name:khData.CustomerName,
-        id:khData.KHGUID
-      }
-      this.khType=khData.CustomerTypeName;
-      this.tel=khData.Switchboard;
-      this.city=khData.CustomerCity;
-      this.address=khData.CustomerAddr;
-      this.digtalInfo=khData.InfoStatus;
-      this.projectInfo=khData.ProjectInfo;
-      this.otherInfo=khData.CustomerOtherInfo;
-      this.khguid=khData.KHGUID;
-      this.customertypeid=khData.CustomerTypeID;
+    getBaseClueInfo(){
       // 获取基本信息填充
       this.$http.post("/api/EnergizaSaleClueController/GetOpportunitiesDetail",{
         OpportunityGUID:this.$route.params.id,
@@ -253,17 +253,30 @@ export default {
         this.fxinfo=data.RequirementOtherInfo;
         this.way={name:data.ChannelName,id:data.ChannelID};
         this.area={name:data.AreaName,id:data.AreaID};
-        this.xstype=[{name:data.OpportunityTypeName,id:data.OpportunityTypeID}];
 
+        let typeNameArr=data.OpportunityTypeName.split(',');
+        let typeIdArr=data.OpportunityTypeID.split(',');
+        this.xstype=typeNameArr.map((el,index)=>{
+          return {
+            name:el,
+            id:typeIdArr[index]
+          }
+        });
         this.productlistAll.map(el=>{
-          this.xstype[0].id.split(',').map(el2=>{
-              if(el.type==el2){
+          this.xstype.map(el2=>{
+              if(el.type==el2.id){
                 this.productlist.push(el);
               }
           })
         })
-
-        this.products=[{name:data.ProductName,id:data.ProductID}];
+        let productsNameArr=data.ProductName.split(',');
+        let productsIdArr=data.ProductID.split(',');
+        this.products=productsNameArr.map((el,index)=>{
+          return {
+            name:el,
+            id:productsIdArr[index]
+          }
+        });
 
         this.extraInfo={
           createPeople:data.CreatorName,
@@ -274,24 +287,53 @@ export default {
           this.isFirstTime=false;
         }, 500)
       })
-
+    },
+    setData(){
+      // 客户信息填充
+      var khData=this.detailInfo;
+      this.kehu={
+        name:khData.CustomerName,
+        id:khData.KHGUID
+      }
+      this.kehuTemp={
+        name:khData.CustomerName,
+        id:khData.KHGUID
+      }
+      this.khType=khData.CustomerTypeName;
+      this.tel=khData.Switchboard;
+      this.city=khData.CustomerCity;
+      this.address=khData.CustomerAddr;
+      this.digtalInfo=khData.InfoStatus;
+      this.projectInfo=khData.ProjectInfo;
+      this.otherInfo=khData.CustomerOtherInfo;
+      this.customertypeid=khData.ZbSortItemGUID;
+      (khData.OpportunityStatusDesc=="商机"||khData.OpportunityStatusDesc=="关闭")?this.canEdit=false:this.canEdit=true
+      this.getBaseClueInfo();
 
       // 获取客户类型
-      this.$http.get("/api/EnergizaSaleClueController/GetCustomerType")
-      .then((res)=>{
+      // this.$http.get("/api/EnergizaSaleClueController/GetCustomerType")
+      // .then((res)=>{
 
-        res.Data.map((el)=>{
-          this.khTypeOption.push({
-              key:el.CustomerTypeID,
-              value:el.CustomerTypeName
-          })
-        })
-      })
+      //   res.Data.map((el)=>{
+      //     this.khTypeOption.push({
+      //         key:el.CustomerTypeID,
+      //         value:el.CustomerTypeName
+      //     })
+      //   })
+      // })
     },
     getInfoData(){
       this.$http.get("/api/EnergizaSaleClueController/GetCluebCondition")
       .then((res)=>{
         // console.log(res)
+        // 获取客户类型
+        res.Data.ListCustomerType.map((el)=>{
+          this.khTypeOption.push({
+              key:el.ItemGUID,
+              value:el.ItemName
+          })
+        })
+
         res.Data.ListProduct.map((el)=>{
           if(!el.IsDisable){
             this.productlistAll.push({
@@ -334,24 +376,20 @@ export default {
 
       })
     },
-    choseKehuFinish(params){ //选择客户完成
-      this.chosekehu=false;
-      if(!params) return;
-      this.kehu={
-        name:params.name,
-        id:params.id
-      }
-    },
+
     openSelect(type){
+      if(!this.canEdit)return;
       this.cmParamChose=true;
       this.cmParamType=type;
 
       switch(type){
-        case 'product':this.cmParamList=this.productlist;this.count="multiple";this.canEmpty=true;break;
+        case 'products':this.cmParamList=this.productlist;this.count="multiple";this.canEmpty=true;break;
         case 'area':this.cmParamList=this.arealist;this.count="";this.canEmpty=false;break;
         case 'way':this.cmParamList=this.waylist;this.count="";this.canEmpty=false;break;
         case 'xstype':this.cmParamList=this.xstypelist;this.count="multiple";this.canEmpty=false;break;
       }
+
+      (type=='xstype'||type=='products')?this.beChose=this[type]:this.beChose=[this[type]];
 
       // console.log(this.cmParamList);
       // this.updateFieldBase();
@@ -360,7 +398,7 @@ export default {
       this.cmParamChose=false;
       // console.log(params);
       switch(this.cmParamType){
-        case 'product':this.products=params;break;
+        case 'products':this.products=params;break;
         case 'area':this.area={
                         name:params.name,
                         id:params.id
@@ -386,9 +424,17 @@ export default {
 
       this.updateFieldBase("selectItem");
     },
+    choseKehuFinish(params){ //选择客户完成
+      this.chosekehu=false;
+      if(!params) return;
+      this.kehu={
+        name:params.name,
+        id:params.id
+      }
+    },
     updateFieldKh(){   //修改客户信息
       if (this.isFirstTime) return;
-      if(!this.kehu.id){
+      if(!this.kehu.name){
         this.$vux.alert.show({
                 title: '友情提示',
                 content: "客户名不能为空！"
@@ -396,13 +442,14 @@ export default {
         return;
       }
       this.$http.post("/api/EnergizaSaleClueController/EditOpportunitiesKH",{
-            OpportunityGUID:  this.$route.params.id,
+            OpportunityGUID:this.$route.params.id,
             CustomerName:this.kehu.name,
-            KHGUID:this.khguid,
+            KHGUID:this.kehu.id,
             Switchboard: this.tel,
             CustomerAddr: this.address,
             CustomerCity:this.city,
-            CustomerTypeID:this.customertypeid,
+            // CustomerTypeID:this.customertypeid,
+            ZbSortItemGUID:this.customertypeid,
             InfoStatus: this.digtalInfo,
             ProjectInfo:this.projectInfo,
             CustomerOtherInfo:this.otherInfo
@@ -410,11 +457,17 @@ export default {
       .then((res)=>{
           if(res.Success){
             this.$vux.toast.text('修改成功！', 'top');
+            this.kehuTemp={
+              name:this.kehu.name,
+              id:this.kehu.id
+            }
+
             this.$cmBus.$emit("refreshXsList");
             this.$cmBus.$emit("changeFieldXS",{
                 field:"name",
                 value:this.kehu.name
             })
+
           }else{
             this.$vux.alert.show({
                 title: '友情提示',
@@ -466,6 +519,7 @@ export default {
           if(res.Success){
             this.$vux.toast.text('修改成功！', 'top');
             this.$cmBus.$emit("refreshXsList");
+            this.$emit("freshGJR");
 
             this.$cmBus.$emit("changeFieldXS",{
                 field:"people",
@@ -490,6 +544,10 @@ export default {
   watch:{
     kehu:{
       handler(val){
+        if(val.id==this.kehuTemp.id&&val.name!=this.kehuTemp.name){
+          this.kehuTemp.id=this.kehu.id="00000000-0000-0000-0000-000000000000";
+        }
+
         this.updateFieldKh();
       },
       deep:true

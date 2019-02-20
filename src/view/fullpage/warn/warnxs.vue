@@ -1,6 +1,6 @@
 <template>
 
-  <div id="xiansuo" class="" style="height:100%">
+  <div id="xiansuo" class="" style="height:100vh">
         <div class="header clearfix">
           <div class="left" style="width: 97%;">
             <search ref="search" v-model="key" :autoFixed="false"  @on-submit="sub" placeholder="客户名称/联系人/联系方式/提交人"></search>
@@ -27,7 +27,7 @@
         <div class="content" id="scroll-wrap">
           <template v-if="!loading2">
             <div id="scroll-box">
-                <list :data="datas"></list>
+                <list :data="datas" :showZP="true"  @finishZP="getData(true)"></list>
                 <p class="text_center" v-if="loading" style="padding:9px 0">
                   <inline-loading></inline-loading>
                   <span style="color:#9d9d9d">数据加载中</span>
@@ -83,11 +83,22 @@ export default {
     // }else if(this.$route.params.type=='kehu'){
     //   this.khid=this.$route.params.id;
     // }
+
+
     this.$cmBus.$on("refreshXsList",()=>{
 
       this.getData(true);
     })
+
     this.getData(true);
+    // this.getParam(()=>{
+    //   this.AreaCheck.map(el => {
+    //     if (el.Value== this.$route.params.areaId.toLowerCase()) {
+    //       this.condition.areaId = el.Text;
+    //     }
+    //   });
+    //   this.getData(true);
+    // });
   },
   data () {
     return {
@@ -100,7 +111,7 @@ export default {
       showCondition:false,
       page:0,
       totalPage:0,
-      PageSize:50,
+      PageSize:15,
       key:"",
       px:'0',
       optionspx: [{
@@ -118,10 +129,19 @@ export default {
           warnType:"",
         },
       datas:[  //列表数据
-      ]
+      ],
+      AreaCheck: [],
     }
   },
   methods:{
+    getParam(fn){
+      this.$http
+      .get("/api/EnergizaSaleClueController/GetClueConditionParamPC")
+      .then(res => {
+        this.AreaCheck=res.Data.AreaCheck;
+        if(fn)fn();
+      })
+    },
     getData(isEmpty){
       this.oppName=this.key;
       if(isEmpty){
@@ -136,17 +156,18 @@ export default {
       }
 
       let current;
-      if(this.$route.params.type=='FollowMore30Day'){
-        let yearNow=(new Date()).getFullYear();
-        let day=this.GetDateTimeStr(-30);
-        current=yearNow+'-01-01~'+day;
+      if(this.$route.params.type=='NoValidityBy1Month'){
+        // let yearNow=(new Date()).getFullYear();
+        // let day=this.GetDateTimeStr(-30);
+        // current=yearNow+'-01-01~'+day;
+        current=this.$route.params.date
       }
 
 
       this.$http.post("/api/EnergizaSaleClueController/GetClueListMobile",{
         PageIndex:this.page,
         PageSize:this.PageSize,
-        OpportunityStatus:this.indexTab,
+        OpportunityStatus:"",
         FollowerGUID:"",
         FollowerGUIDs:this.condition.peopleId,
         AreaIDs:this.condition.areaId,
@@ -162,7 +183,7 @@ export default {
         orderByType:"DESC",
         DepartmentGUID:this.$route.params.id,
         WarningType:this.$route.params.type,
-        CreateTime:current
+        CreateTime:this.$route.params.date
       })
       .then((res)=>{
         // console.log(res);
@@ -184,13 +205,6 @@ export default {
 
       })
     },
-    // conditionFinish(params){ //筛选条件选择完毕
-    //   // console.log(params);
-    //   this.showCondition=false;
-    //   this.condition=params;
-
-    //   this.getData(true);
-    // },
     loadMore() {
       this.page++;
       if(this.page>this.totalPage&&this.totalPage!=0) return;

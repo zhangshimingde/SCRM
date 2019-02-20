@@ -4,7 +4,7 @@
           <div class="absolute float" >
             <img src="static/img/float.png"  :class="show?'rotate':''" alt="" id="float" @click="show=!show">
 
-            <div class="absolute btn-box">
+            <div class="absolute btn-box" :class="show?'':'none'">
                 <!-- <div class="relative functionBtn" :class="show?'':'close'" @click="!openReceipt">
                   <img src="static/img/apply.png" alt="">
                   <span class="absolute name">开票申请</span>

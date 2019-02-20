@@ -7,7 +7,7 @@
       </tab>
     </div>
 
-    
+
     <div class="table-wrap" style="padding-top:42px">
       <tab1 v-if="index==0"></tab1>
       <tab2 v-else-if="index==1"></tab2>
@@ -43,7 +43,7 @@ export default {
       setTimeout(()=>{
         this.index=index;
       }, 200)
-      
+
     }
   }
 }
@@ -51,8 +51,8 @@ export default {
 
 <style lang="less">
 @import '../../../assets/less/exports.less';
-  .table-wrap{
-    padding: 10px 0;
-  }
-  
+  // .table-wrap{
+  //   padding: 10px 0;
+  // }
+
 </style>

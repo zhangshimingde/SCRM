@@ -12,10 +12,11 @@
             <x-input title="姓名" v-model="baseInfo.LxrName" placeholder="必填" @on-change="updateField('LxrName,'+baseInfo.LxrName)"  text-align="right"></x-input>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="chosekehu=true">
-            <span class="left banner">公司名称</span>
-            <span class="right content">{{kehu.name}}</span>
+        <cell-box>
+          <div class="form-item clearfix sp readw" @click="chosekehu=true">
+            <!-- <span class="left banner">公司名称</span>
+            <span class="right content">{{kehu.name}}</span> -->
+            <x-input title="公司名称"  v-model="kehu.name" placeholder="必填" readonly  text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box >
@@ -255,7 +256,7 @@ export default {
       }],
       position:"",
       Gender:"",
-      GenderList:[{value:'男',key:'1'},{value:'女',key:'0'}],
+      GenderList:[{value:'男',key:'1'},{value:'女',key:'0'},{value:'不详',key:''}],
       JobLevel:"",
       JobLevelList:[{value:'基层',key:'基层'},{value:'中级',key:'中级'},{value:'高级',key:'高级'}],
       baseInfo:{
@@ -296,13 +297,13 @@ export default {
   },
   methods:{
     setData(){
-      console.log(this.detailInfo.LxrEntity);
+      // console.log(this.detailInfo.LxrEntity);
         var data=this.detailInfo.LxrEntity;
         this.kehu={
           name:data.FullName,
           id:data.KHGUID
         }
-        this.Gender=data.Gender;
+        this.Gender=data.Gender?data.Gender:'';
         this.JobLevel=data.JobLevel;
         this.baseInfo={
           LxrName:data.LxrName,
@@ -422,14 +423,20 @@ export default {
         })
         return;
       }
-      this.$http.post("/api/AjaxLXRinfoController/EditLxr",{
-        AS_Field:field,
-        AS_Value:val,
-        LxrGuid:this.detailInfo.LxrEntity.SortGUID
-      }).then((res)=>{
+      // this.$http.post("/api/AjaxLXRinfoController/EditLxr",{
+      //   AS_Field:field,
+      //   AS_Value:val,
+      //   LxrGuid:this.detailInfo.LxrEntity.SortGUID
+      // })
+      let params=[{FieldName:field,Value:val}];
+      this.$http.post("/api/AjaxLXRinfoController/UpdateLxrInfoMult",{
+        Param:params,
+        SortGUID:this.detailInfo.LxrEntity.SortGUID
+      })
+      .then((res)=>{
           if(res.Success){
             this.$vux.toast.text('修改成功！', 'top');
-            this.$cmBus.$emit("refreshLxrList");
+            // this.$cmBus.$emit("refreshLxrList");
             if(field=='LxrName'){
               this.$cmBus.$emit("changeFieldSJ",{
                 field:field,

@@ -5,6 +5,7 @@
           <search ref="search" :autoFixed="false" @on-cancel="can" v-model="key" @on-submit="subs"  placeholder="搜索"></search>
         </div>
         <div class="res-list">
+          <div style="padding:5px 10px;background:#eaeaea;font-size:0.9rem" v-if="options==temp">以下为历史跟进人</div>
           <group  v-if="options.length>0">
             <checklist :options="options" label-position="left"  v-model="value"></checklist>
           </group>
@@ -42,7 +43,7 @@ export default {
     // }
 
   },
-  props:["isClue","id"],
+  props:["isClue","id","flag","beChose"],
   data () {
     return {
       loading:true,
@@ -108,10 +109,16 @@ export default {
       if(!val) return ;
       this.loading=true;
       if(this.isClue){
-        this.$http.post("/api/EnergizeAction/SelectClueAreaUser",
+        // this.$http.post("/api/EnergizeAction/SelectClueAreaUser",
+        //   {
+        //     keyword:val,
+        //     oppGuidStr:this.id
+        //   }
+        // )
+        this.$http.post("/api/EnergizeAction/SelectUserOrBuUser",
           {
             keyword:val,
-            oppGuidStr:this.id
+            AreaID:""
           }
         )
         .then((res)=>{
@@ -178,6 +185,13 @@ export default {
       if(!val){
         this.options=this.temp;
         this.value=[];
+      }
+    },
+    flag(val){
+      if(val){
+        this.value=this.beChose.map(el=>{
+              return el
+        });
       }
     },
     deleteId(val){  //检测被删除的用户id

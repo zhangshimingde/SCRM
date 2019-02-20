@@ -38,7 +38,7 @@
           <template v-else>
             <p class="text_center" style="padding:40px 0">
               <inline-loading></inline-loading>
-              <span style="color:#9d9d9d">数据加载中</span>
+              <span style="color:#9d9d9d">数据加载中,请稍等</span>
             </p>
           </template>
         </div>
@@ -97,6 +97,7 @@ export default {
     return {
       khid:"",
       sjid:"",
+      lock:false,
       menus:false,
       lxrName:"",
       loading:false,
@@ -135,7 +136,15 @@ export default {
       })
     },
     getData(isEmpty){
-
+      if(this.lock){
+        this.$vux.toast.show({
+          text: '请耐心等待',
+          type:'text',
+          time:1000
+        })
+        return;
+      }
+      this.lock=true;
       this.lxrName=this.key;
       if(isEmpty){
         this.page=0;
@@ -154,13 +163,14 @@ export default {
         Bussiness:this.condition.Bussiness,
         BusinessDecisioner:this.condition.BusinessDecisioner,
         PageIndex:this.page,
-        PageSize:50,
+        PageSize:15,
         KHGUID:this.khid,
         OPPGUID:this.sjid,
         orderField:orderField,
         orderByType:orderByType,
       })
       .then((res)=>{
+        this.lock=false;
         // console.log(res.Data);
         this.totalPage=Math.ceil(res.Data.TotalRecords/res.Data.PageSize);
         this.loading = false;

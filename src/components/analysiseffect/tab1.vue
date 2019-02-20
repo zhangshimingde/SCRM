@@ -6,13 +6,15 @@
 
         <!-- </group> -->
 
+
+        <div class="clearfix analy-header relative" v-show="!loading" style="padding:5px 0">
+          <!-- <div class="left analy-link-wrap">
+            <span @click="changeType('本月')" :class="activeType=='本月'?'active':''">本月</span>
+            <span @click="changeType('年度')" :class="activeType=='年度'?'active':''">年度</span>
+          </div> -->
+          <datepicker @changeDates="changeDates" class="absolute cm-date-picker"/>
+        </div>
         <template  v-if="!loading">
-          <div class="clearfix analy-header" style="padding:5px 0">
-              <div class="left analy-link-wrap">
-                <span @click="changeType('本月')" :class="activeType=='本月'?'active':''">本月</span>
-                <span @click="changeType('年度')" :class="activeType=='年度'?'active':''">年度</span>
-              </div>
-            </div>
           <div class="charts-rwap relative">
               <p class="text_right chart-dw" style="font-size:0.9rem;padding-right:1rem;color:#999">(单位：个)</p>
               <charts id="tab11-charts" styles="width:100%;height:19rem;margin:0 auto" :option="echartsOptions"></charts>
@@ -35,14 +37,14 @@
                     <tr v-for="(item,index) in tableData" @click="getDetail(item)" :key="index">
                     <!-- <tr v-for="(item,index) in tableData" :key="index"> -->
                       <!-- <td>{{rankType=='员工'?item.areaFullName:item.areaName}}</td> -->
-                       <td>{{item.areaName}}</td>
-                      <td>{{item.XZClue}}</td>
-                      <td>{{item.GJZClue}}</td>
+                      <td>{{item.areaName}}</td>
+                      <td @click="toTranslate(item,'ClueNewAdd')" :class="rankType=='员工'?'clickable':''">{{item.XZClue}}</td>
+                      <td @click="toTranslate(item,'ClueFollow')" :class="rankType=='员工'?'clickable':''">{{item.GJZClue}}</td>
                       <td>{{item.AvgGJZQ}}</td>
                       <!-- <td>{{item.XZSJ}}</td> -->
-                      <td>{{item.ZSJClue}}</td>
+                      <td @click="toTranslate(item,'ClueTransferOpp')" :class="rankType=='员工'?'clickable':''">{{item.ZSJClue}}</td>
                       <td>{{(item.GJZClue+item.WGJClue+item.ZSJClue+item.GBClue)!=0?(item.ZSJClue/(item.GJZClue+item.WGJClue+item.ZSJClue+item.GBClue)*100).toFixed(2):0}}%</td>
-                      <td>{{item.GBClue}}</td>
+                      <td @click="toTranslate(item,'ClueClose')" :class="rankType=='员工'?'clickable':''">{{item.GBClue}}</td>
                     </tr>
                   </tbody>
             </x-table>
@@ -61,6 +63,8 @@
 <script>
 import { XTable, Selector ,Group  ,InlineLoading } from 'vux'
 import charts from "../charts/charts"
+import datepicker from '@/components/common/datepicker'
+import datepickerCmData from '@/mixins/datepicker'
 export default {
   name: '',
   mounted(){
@@ -74,6 +78,7 @@ export default {
     this.getData();
 
     window.addEventListener("popstate", ()=> {
+        if(this.$route.name!='analysiseffect')return;
         // console.log("我监听到了浏览器的返回按钮事件啦");//根据自己的需求实现自己的功能
         if(this.rankType=="公司") return;
         if(this.rankType=="员工"){
@@ -86,8 +91,9 @@ export default {
         this.getData();
       }, false);
   },
+  mixins:[datepickerCmData],
   components:{
-    XTable, Selector ,Group,charts,InlineLoading
+    XTable, Selector ,Group,charts,InlineLoading,datepicker
   },
   computed:{
     echartsOptions(){
@@ -99,11 +105,11 @@ export default {
                       type: 'shadow'
                   }
               },
-              legend: {
-                  data:this.title,
-                  top:-5,
-                  right:10
-              },
+              // legend: {
+              //     data:this.title,
+              //     top:-5,
+              //     right:10
+              // },
               color:['#51C6EF','#F9C268'],
               grid: {
                     top: 35,
@@ -182,6 +188,9 @@ export default {
           }
     }
   },
+  activated() {
+    this.getData();
+  },
   props:['dateType'],
   data(){
     return{
@@ -215,6 +224,30 @@ export default {
     }
   },
   methods:{
+    toTranslate(item,type){
+      if(this.rankType!='员工')return;
+      // console.log(item);
+      // console.log(type);
+      let dateType;
+      this.activeType=="本月"?dateType="月":dateType="年";
+      let title;
+      switch(type){
+        case 'ClueNewAdd':title=`线索新增(${dateType})`;break;
+        case 'ClueFollow':title=`线索跟进(${dateType})`;break;
+        case 'ClueTransferOpp':title=`线索转商机(${dateType})`;break;
+        case 'ClueClose':title=`线索关闭(${dateType})`;break;
+      }
+      this.$router.push({
+        name:'zhxs',
+        params:{
+          title:title,
+          type:type,
+          id:item.areaGUID,
+          dateType:dateType,
+          date:`${this.dateRange[0]}~${this.dateRange[1]}`
+        }
+      })
+    },
     pushState(){
       window.history.pushState(null, null, "");
     },
@@ -228,7 +261,10 @@ export default {
       this.$http.post("/api/EnergizeSaleBulletin/CompanyClueStatis",{
           NodeGUID:this.id,
           GroupBy:this.rankType,
-          DateType:type
+          // DateType:type,
+
+          sdate:this.dateRange[0],
+          edate:this.dateRange[1]
 
       })
       .then((res)=>{
@@ -252,7 +288,10 @@ export default {
       this.getData();
     },
     getDetail(item){
-      // console.log(item.areaGUID)
+      if(this.rankType=="员工"){
+        return ;
+      }
+      // console.log(item)
       this.id=item.areaGUID;
       if(this.rankType=="公司"){
         this.tempId=item.areaGUID;
@@ -261,8 +300,6 @@ export default {
       }else if(this.rankType=="部门"){
         this.rankType="员工";
         this.pushState();
-      }else if(this.rankType=="员工"){
-        return ;
       }
       this.getData();
     }

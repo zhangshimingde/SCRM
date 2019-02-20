@@ -87,7 +87,7 @@
 
 <script>
 import { Search,Checklist,Group,InlineLoading,TransferDom ,XInput ,Popup } from 'vux'
-import publish from "./publish"
+import publish from "./publishSimple"
 import voice from '../voice'
 export default {
   name: '',
@@ -270,9 +270,9 @@ export default {
       arr.map((el)=>{
         // el.list_fry.avater=""; //给默认空头像
         el.entity_flr.comments=el.list_fry||[];
-        if(el.entity_flr.LastEditTime){
-          el.entity_flr.date=el.entity_flr.LastEditTime.substring(0,10);
-          el.entity_flr.time=el.entity_flr.LastEditTime.substring(11,16);
+        if(el.entity_flr.CreateTime){
+          el.entity_flr.date=el.entity_flr.CreateTime.substring(0,10);
+          el.entity_flr.time=el.entity_flr.CreateTime.substring(11,16);
         }
         // el.entity_flr.avater="" //给默认空头像
         delete el["list_fry"];

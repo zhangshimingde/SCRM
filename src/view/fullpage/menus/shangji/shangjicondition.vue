@@ -16,7 +16,12 @@
               </li>
             </ul>
           </div>
-
+          <div class="condition-box-item">
+            <p class="title">商机预警</p>
+            <ul class="data-list">
+              <li v-for="(item,index) in warnTypeList" style="padding:10px 30px;" :class="item.id==warnType.id?'active':''" :key="index" @click="chosewarnType('warnTypeList',item)">{{item.name}}</li>
+            </ul>
+          </div>
           <div class="condition-box-item">
             <p class="title">商机阶段</p>
             <ul class="data-list">
@@ -110,6 +115,11 @@ export default {
       productList:[],
       areaList:[],
       productlistALL:[],
+      warnType:{
+          name:"",
+          id:""
+      },
+      warnTypeList:[],
 
     }
   },
@@ -120,6 +130,7 @@ export default {
       this.typeList=[];
       this.productList=[];
       this.areaList=[];
+      this.warnTypeList=[];
       this.productlistALL=[];
 
       this.people=[];
@@ -139,9 +150,27 @@ export default {
           name:"",
           id:""
       }];
+      this.warnType={
+          name:"",
+          id:""
+      };
     },
     deletPople(index){
       this.people.splice(index,1)
+    },
+    chosewarnType(type,item){
+      if(item.id==this.warnType.id){
+        this.warnType={
+            name:"",
+            id:""
+        };
+      }else{
+        this.warnType={
+            name:item.name,
+            id:item.id
+        };
+      }
+
     },
     getInfoData(){
       var xsId,type;
@@ -162,7 +191,6 @@ export default {
         IndexGUID:xsId
       })
       .then((res)=>{
-        console.log(res);
         this.inits();
         this.loading=false;
         res.Data.ListStage.map((el)=>{
@@ -183,6 +211,13 @@ export default {
           this.areaList.push({
             name:el.CompanyName,
             id:el.CompanyGUID,
+            chose:false
+          })
+        })
+        res.Data.ListWarningType.map((el)=>{
+          this.warnTypeList.push({
+            name:el.Text,
+            id:el.Value,
             chose:false
           })
         })
@@ -301,7 +336,8 @@ export default {
           status:statusId.join(','),
           types:typesId.join(','),
           products:productsId.join(','),
-          areas:areasId.join(',')
+          areas:areasId.join(','),
+          warnType:this.warnType.id
         }
         // console.log(params);
         // return;
@@ -340,6 +376,10 @@ export default {
         name:"",
         id:""
        }];
+       this.warnType={
+            name:"",
+            id:""
+        };
 
 
       this.productList=[];
@@ -353,6 +393,9 @@ export default {
         el.chose=false;
       });
       this.areaList.map((el)=>{
+        el.chose=false;
+      });
+      this.warnTypeList.map((el)=>{
         el.chose=false;
       });
     }

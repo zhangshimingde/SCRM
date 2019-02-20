@@ -1,15 +1,17 @@
 <template>
       <div id="tab2">
+
+        <div class="charts-rwap relative" style="height:42px" v-show="!loading">
+            <p class="text_right chart-dw" style="padding-top:0.9rem;font-size:0.9rem;padding-right:1rem;color:#999">(单位：个)</p>
+            <datepicker @changeDates="changeDates" class="absolute cm-date-picker"/>
+        </div>
         <template  v-if="!loading">
-          <div class="charts-wrap">
-            <p class="text_right" style="font-size:0.9rem;padding-left:1rem;margin-top:1rem;color:#999"><span class="left">单位：个</span></p>
             <div class="relative">
-              <p class="absolute totals text_center">
+              <p class="absolute totals text_center" style="top:45%">
                 总数<br> <span style="font-size:1.2rem">{{total}}</span>
               </p>
               <charts id="tab2-charts" @changePie="changePie" styles="width:100%;height:18rem;margin:0 auto;padding-bottom:20px" :option="echartsOptions"></charts>
             </div>
-          </div>
         </template>
         <template v-else >
           <p class="text_center" style="padding:40px 0">
@@ -31,7 +33,7 @@
               <template v-if="tableData.length>0">
               <cell-box v-for="(listdata,index) in tableData" :key="index" link="">
                 <div class="wraps">
-                  <router-link class="block" style="color:rgb(102, 102, 102)" :to="{name:'shangjidetail',params:{id:listdata.OpportunitiesGUID}}">
+                  <router-link class="block" style="color:rgb(102, 102, 102)" :to="{name:'shangjidetailkeep',params:{id:listdata.OpportunitiesGUID}}">
                     <div class="clearfix header bigger">
                       <p class="left title ">{{listdata.OpportunitiesName}}</p>
                       <span class="right date" >{{listdata.EnterIntoStageTime | formate}}</span>
@@ -61,13 +63,15 @@
 <script>
 import {  TabItem,InlineLoading,Group ,Cell,CellBox  } from 'vux'
 import charts from "../charts/charts"
+import datepicker from '@/components/common/datepicker'
+import datepickerCmData from '@/mixins/datepicker'
 export default {
   name: '',
   created(){
     this.getData();
-    this.getTableData();
 
     window.addEventListener("popstate", ()=> {
+      if(this.$route.name!='analysiserror')return;
       // console.log("我监听到了浏览器的返回按钮事件啦");//根据自己的需求实现自己的功能
       if(this.rankType=="公司") return;
       if(this.rankType=="员工"){
@@ -78,11 +82,15 @@ export default {
         this.id="";
       }
       this.getData();
-      this.getTableData();
+
     }, false);
   },
+  activated() {
+    this.getData();
+  },
+  mixins:[datepickerCmData],
   components:{
-    charts,TabItem ,InlineLoading,Group,Cell,CellBox
+    charts,TabItem ,InlineLoading,Group,Cell,CellBox,datepicker
   },
   computed:{
     echartsOptions(){
@@ -171,7 +179,9 @@ export default {
       this.pieDataAll=[];
       this.$http.post("/api/EnergizeSaleBulletin/GetClosedOpportunitiesPie",{
           NodeGUID:this.id,
-          GroupBy:this.rankType
+          GroupBy:this.rankType,
+          sdate:this.dateRange[0],
+          edate:this.dateRange[1]
       })
       .then((res)=>{
         this.total=0;
@@ -193,13 +203,17 @@ export default {
         }
 
       })
+
+      this.getTableData();
     },
     getTableData(){  //获取列表数据
       this.tableData=[];
       this.loading2=true;
       this.$http.post("/api/EnergizeSaleBulletin/GetClosedOpportunities",{
           NodeGUID:this.id,
-          GroupBy:this.rankType
+          GroupBy:this.rankType,
+          sdate:this.dateRange[0],
+          edate:this.dateRange[1]
       })
       .then((res)=>{
         // console.log(res);
@@ -211,6 +225,9 @@ export default {
     },
     changePie(params){
       // console.log(params.dataIndex)
+      if(this.rankType=="员工"){
+        return ;
+      }
       this.id=this.pieDataAll[params.dataIndex].NodeGUID;
 
       if(this.rankType=="公司"){
@@ -220,11 +237,8 @@ export default {
       }else if(this.rankType=="部门"){
         this.rankType="员工";
         this.pushState();
-      }else if(this.rankType=="员工"){
-        return ;
       }
       this.getData();
-      this.getTableData();
     },
     sortList(type){
       var key="";

@@ -1,2 +1,3 @@
 node_modules
 dist
+/src/components/analysiserror/tab1备份.vue

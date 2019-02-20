@@ -22,8 +22,8 @@
 
     <!-- 选择联系人 -->
       <div v-transfer-dom>
-        <popup v-model="chosepeople" :popup-style="{background:'white'}" position="right" width="80%">
-          <checkpeople @choseFinish="choseSinglePeopleFinish"></checkpeople>
+        <popup v-model="chosepeople" @on-show="swit=!swit" :popup-style="{background:'white'}" position="right" width="80%">
+          <checkpeople :chosePoepleType='1' :swit="swit" :beChose="people" @choseFinish="choseSinglePeopleFinish"></checkpeople>
         </popup>
       </div>
 
@@ -33,7 +33,7 @@
         <div class="confirm left" @click="go">保存</div>
     </div>
   </div>
-    
+
 </template>
 
 <script>
@@ -42,21 +42,22 @@ import checkpeople from '../../../../../components/common/checkpeoplekh';
 export default {
   name: '',
   components:{
-    CellBox,Group ,InlineLoading,XTextarea ,PopupRadio ,Popup,checkpeople,Datetime 
+    CellBox,Group ,InlineLoading,XTextarea ,PopupRadio ,Popup,checkpeople,Datetime
   },
   directives: {
     TransferDom
   },
   created(){
     // 自定义返回事件
-     window.history.pushState(null, null, ""); 
-     window.addEventListener("popstate", ()=> { 
+     window.history.pushState(null, null, "");
+     window.addEventListener("popstate", ()=> {
         this.closed();
-      }, false); 
+      }, false);
   },
   props:[],
   data () {
     return {
+      swit:false,
       chosepeople:false,
       defaultDate:"2017-09-22 22:00:00",
       date:"",
@@ -72,6 +73,7 @@ export default {
           key:"来电",
           value:"来电"
         },
+        {label:"去电",value:"去电"},
         {
           key:"来访",
           value:"来访"
@@ -98,9 +100,8 @@ export default {
     closed(){
       this.$emit("opRecord",false,{})
     },
-    
+
     go(){
-        
       if(this.content&&this.way&&this.people){
         // ajax
         var params={
@@ -120,9 +121,15 @@ export default {
       }
     },
     choseSinglePeopleFinish(params){  //单选人完毕(主责人和上级确认人)
-      console.log(params);
-      this.people=params.name;
       this.chosepeople=false;
+      if( (typeof params) === 'undefined'){  //一个人都没有选，点了确定
+        this.people="";
+        return;
+      }
+      if(params=='cancel'){
+        return;
+      }
+      this.people=params.name;
     }
   },
   watch:{
@@ -155,7 +162,7 @@ export default {
     margin:10px 0px;
     padding: 5px 15px !important;
     .weui-cell__ft{
-      
+
       .vux-cell-value{
         color: #3079D5;
       }

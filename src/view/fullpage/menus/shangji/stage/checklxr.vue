@@ -8,7 +8,7 @@
           <span class="left text_center addsj" style="width:15%;height:44px;line-height:44px">
             <i class="iconfont icon-tianjia" style="font-size:1.5rem;color:#999;" @click="menus=true"></i>
           </span>
-          
+
         </div>
 
         <div class="res-list">
@@ -19,7 +19,7 @@
             暂无数据..
           </div>
         </div>
-        
+
       </template>
       <template v-else>
         <div class="text_center" style="padding:40px 0;">
@@ -54,10 +54,10 @@ export default {
     this.getInitData()
 
     // 自定义返回事件
-     window.history.pushState(null, null, ""); 
-     window.addEventListener("popstate", ()=> { 
+     window.history.pushState(null, null, "");
+     window.addEventListener("popstate", ()=> {
         this.cancel();
-      }, false); 
+      }, false);
   },
   props:["deleteId","beChosed","roleType"],
   data () {
@@ -81,6 +81,7 @@ export default {
       this.loading=true;
       this.$http.post("/api/AjaxLXRinfoController/GetLxrFromKhSearchByUsername",{
         OpportunitiesGUID:this.$route.params.id,
+        type:1, //1：商机 2：客户 3：联系人
         userName:""
       })
       .then((res)=>{
@@ -93,7 +94,7 @@ export default {
           this.temp.push({
               key:el.SortGUID,
               value:el.LxrName
-          })  
+          })
         })
 
         this.options=this.temp;
@@ -107,6 +108,7 @@ export default {
       this.loading=true;
       this.$http.post("/api/AjaxLXRinfoController/GetLxrFromKhSearchByUsername",{
         OpportunitiesGUID:this.$route.params.id,
+        type:1, //1：商机 2：客户 3：联系人
         userName:val
       })
       .then((res)=>{
@@ -123,7 +125,7 @@ export default {
         })
       })
     },
-    comfirm(){ 
+    comfirm(){
       if(this.value.length<1) return;
       var params=[],hash={};
       this.value.map((el)=>{
@@ -132,19 +134,19 @@ export default {
             params.push({
                 name:vl.value,
                 id:vl.key
-            })  
+            })
           };
         })
-        
+
       });
-     
+
       // this.value=[];
 
       // 选完人之后选择立场
       this.peoples=params;
       this.peopleset=true;
 
-      
+
     },
     cancel(){
       // this.value=[];
@@ -205,7 +207,7 @@ export default {
 <style lang="less">
 .people-box-large{
   z-index: 2;
-  
+
   .weui-search-bar{
     &:before,&:after{
       display: none;
@@ -222,7 +224,7 @@ export default {
   background-color: white;
   .header{
     display: flex;
-    @h:3rem;  
+    @h:3rem;
     height: @h;
     line-height: @h;
     text-align: center;

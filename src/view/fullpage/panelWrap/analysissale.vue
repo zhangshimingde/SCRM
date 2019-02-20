@@ -1,5 +1,5 @@
 <template>
-  <div id="analysissale" class=''>
+  <div id="analysissale" >
     <div class="fixed tab-sw">
       <tab active-color="#0992FF"  bar-active-color="#0992FF">
         <tab-item :selected="index==0" @on-item-click="index=0">销售预测</tab-item>
@@ -11,7 +11,7 @@
       <tab1 v-if="index==0"></tab1>
       <tab2 v-else-if="index==1"></tab2>
     </div>
-    
+
   </div>
 </template>
 
@@ -23,12 +23,12 @@ export default {
   name: 'analysissale',
   created(){
   },
-  beforeCreate () {
-    document.querySelector('html').setAttribute('style', 'background:#fff')
-  },
-  beforeDestroy () {
-    document.querySelector('html').setAttribute('style', 'background:#F6F6F6')
-  },
+  // beforeCreate () {
+  //   document.querySelector('html').setAttribute('style', 'background:#fff')
+  // },
+  // beforeDestroy () {
+  //   document.querySelector('html').setAttribute('style', 'background:#F6F6F6')
+  // },
   data(){
     return{
       index:0

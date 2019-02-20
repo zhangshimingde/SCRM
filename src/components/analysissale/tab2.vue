@@ -1,34 +1,34 @@
 <template>
-    <div id="tab2">
-        <div class="cm-padding  fx-sale-title">
-
-          <template  v-if="!loading">
-            <p class="clearfix" style="margin-top:-10px">
-              <span class="left date dw"  style="margin:9px 0">
-                <popup-picker :data="choseYear" class="inline_block" @on-change="changeDateType" v-model="year">
-                  <i class="iconfont icon-rili" slot="title" style="margin-right:4px"></i>
-                </popup-picker>
-              </span>
-              <span class="right" id="chose-ar">
-                <popup-picker :data="typeList" :display-format="format" :columns="2" v-model="type" ref="picker3" @on-change="choseArea" show-name></popup-picker>
-              </span>
-            </p>
-            <!-- p标签不能套div 这里做出修改 -->
-            <div class="clearfix" >
-              <div class="left" style="color:#888">总金额：<span style="color:#F4333C">{{all.toFixed(2)}}万</span></div> <br /><br />
-              <div class="" style="color:#888">{{title}}：<span style="color:#F4333C">{{totalMoney.toFixed(2)}}万/{{count}}个</span></div>
-            </div>
-            <div class="charts-rwap relative">
-                <charts id="tab11-charts" @changeFunnel="changeFunnel" styles="width:100%;height:15rem;margin:0 auto" :option="echartsOptions"></charts>
-            </div>
-          </template>
-          <template v-else >
-            <p class="text_center" style="padding:40px 0;font-size:0.9rem">
-              <inline-loading></inline-loading>
-              <span style="color:#9d9d9d">数据加载中</span>
-            </p>
-          </template>
-        </div>
+    <div id="tab2" class="scroll-tab"  style='background:white'>
+      <div class="scroll-inner">
+          <div class="cm-padding  fx-sale-title">
+            <template  v-if="!loading">
+              <p class="clearfix" style="margin-top:-10px">
+                <span class="left date dw"  style="margin:9px 0">
+                  <popup-picker :data="choseYear" class="inline_block" @on-change="changeDateType" v-model="year">
+                    <i class="iconfont icon-rili" slot="title" style="margin-right:4px"></i>
+                  </popup-picker>
+                </span>
+                <span class="right" id="chose-ar">
+                  <popup-picker :data="typeList" :display-format="format" :columns="2" v-model="type" ref="picker3" @on-change="choseArea" show-name></popup-picker>
+                </span>
+              </p>
+              <!-- p标签不能套div 这里做出修改 -->
+              <div class="clearfix" >
+                <div class="left" style="color:#888">总金额：<span style="color:#F4333C">{{all.toFixed(2)}}万</span></div> <br /><br />
+                <div class="" style="color:#888">{{title}}：<span style="color:#F4333C">{{totalMoney.toFixed(2)}}万/{{count}}个</span></div>
+              </div>
+              <div class="charts-rwap relative">
+                  <charts id="tab11-charts" @changeFunnel="changeFunnel" styles="width:100%;height:15rem;margin:0 auto" :option="echartsOptions"></charts>
+              </div>
+            </template>
+            <template v-else >
+              <p class="text_center" style="padding:40px 0;font-size:0.9rem">
+                <inline-loading></inline-loading>
+                <span style="color:#9d9d9d">数据加载中</span>
+              </p>
+            </template>
+          </div>
           <div style="background:#f6f6f6;height:1rem;"></div>
           <group>
             <cell title="商机信息">
@@ -37,8 +37,8 @@
 
 
             <div class="clearfix text_center" id='error-tab'>
-              <span class="left" @click="changeSort('PredictTradeMoney')" style="border-right:1px solid #d9d9d9">预计成交金额 <i class="iconfont icon-arrow" :class="sortWay=='desc'?'':'up'" v-if="sortType=='PredictTradeMoney'"></i></span>
-              <span class="left" @click="changeSort('PredictTradeTime')">预计成交时间<i class="iconfont icon-arrow" :class="sortWay=='desc'?'':'up'" v-if="sortType=='PredictTradeTime'"></i></span>
+              <span class="left" @click="changeSort('PredictTradeMoney')" style="border-right:1px solid #d9d9d9">预计成交金额 <i class="iconfont icon-arrow" :class="sortWay=='descending'?'':'up'" v-if="sortType=='PredictTradeMoney'"></i></span>
+              <span class="left" @click="changeSort('PredictTradeTime')">预计成交时间<i class="iconfont icon-arrow" :class="sortWay=='descending'?'':'up'" v-if="sortType=='PredictTradeTime'"></i></span>
             </div>
 
             <template  v-if="!loading2">
@@ -54,6 +54,11 @@
                   </p>
                 </div>
               </cell-box>
+
+              <p class="text_center" v-show="loadMoreFlag" style="padding:9px 0">
+                <inline-loading></inline-loading>
+                <span style="color:#9d9d9d">数据加载中</span>
+              </p>
             </template>
             <template v-else >
               <p class="text_center" style="padding:40px 0;font-size:0.9rem">
@@ -62,6 +67,8 @@
               </p>
             </template>
           </group>
+      </div>
+
 
     </div>
 </template>
@@ -74,6 +81,17 @@ export default {
   name: '',
   created(){
     this.getArea();
+  },
+  mounted(){
+    document.getElementsByClassName('scroll-tab')[0].style.height=document.documentElement.clientHeight-45+'px';
+    let _this=this;
+    document.getElementsByClassName('scroll-tab')[0].onscroll=function(){
+          if(_this.loading) return;
+          // console.log(this.scrollTop ,this.offsetHeight,document.getElementsByClassName('scroll-inner')[0].offsetHeight)
+          if(this.scrollTop + this.offsetHeight>=document.getElementsByClassName('scroll-inner')[0].offsetHeight){
+            _this.loadMore();
+          }
+    }
   },
   components:{
     XTable, Selector,Cell ,CellBox,Group,charts,InlineLoading,PopupPicker,PopupRadio
@@ -152,9 +170,10 @@ export default {
   data(){
     return{
       sortType:"PredictTradeMoney",
-      sortWay:"desc",
+      sortWay:"descending",
       loading:true,
       loading2:true,
+      loadMoreFlag:false,
       choseYear:[['2015', '2016','2017', '2018','2019', '2020']],
       year:[(new Date()).getFullYear().toString()],
       type: ['allArea','allDepartment'],
@@ -162,6 +181,8 @@ export default {
       funnelData:[],
       pages:0,
       pageIndex:0,
+      pageSize:10,
+      tempData:null,
       title:"",
       all:0,
       totalMoney:0,
@@ -172,6 +193,13 @@ export default {
     }
   },
   methods:{
+    loadMore() {
+      this.pageIndex++;
+      // console.log(this.pageIndex+","+this.pages);
+      if(this.pageIndex>=this.pages&&this.pages!=0) return;
+      this.loadMoreFlag=true;
+      this.getTableData();
+    },
     format(value, name) {
       // console.log(name.split(" ")[1])
         if(name.split(" ")[1]=="全部部门"){
@@ -215,43 +243,34 @@ export default {
           this.all+=el.SumPredictTradeMoney;
         });
 
-        // console.log(this.funnelData)
         this.title=this.funnelDataAll[0].StageName;
         this.totalMoney=this.funnelDataAll[0].SumPredictTradeMoney;
-        // console.log(this.funnelDataAll[0].StageName)
-        this.getTableData(this.funnelDataAll[0]);
-
-
-        // console.log(this.funnelData[0],this.funnelDataAll[0])
+        this.tempData=this.funnelDataAll[0];
+        this.getTableData();
       })
 
     },
-    getTableData(val){  //获取列表数据
+    getTableData(){  //获取列表数据
 
-      if (this.pageIndex>this.pages) return ;
       this.$http.post('/api/EnergizeSaleBulletin/GetConditionListForApp',{
-        PageIndex:0,
-        PageSize:1000,
+        PageIndex:this.pageIndex,
+        PageSize:this.pageSize,
         SalesYear:this.year[0],
-        StageGUID:val.StageGUID,
+        StageGUID:this.tempData.StageGUID,
         CompanyGUID:this.type[0],
-        DepartmentGUID:this.type[1]
+        DepartmentGUID:this.type[1],
+        OrderField:this.sortType,
+        OrderByType:this.sortWay
       })
       .then((res)=>{
         // console.log(res);
-        this.tableData=[];
         this.loading2=false;
-        this.pages=Math.ceil(res.Data.PagingInfo.TotalRecords/1000);
-        // alert(this.pages)
-        this.pageIndex++;
-
-
+        this.loadMoreFlag=false;
+        this.pages=Math.ceil(res.Data.PagingInfo.TotalRecords/this.pageSize);
         this.count=res.Data.PagingInfo.TotalRecords;
         res.Data.SOListDataTable.map((el)=>{
           this.tableData.push(el);
         })
-
-        this.sortByKey(this.tableData,this.sortType);
       })
     },
     getArea(){  //获取部门
@@ -259,33 +278,47 @@ export default {
         Type:1
       })
       .then((res)=>{
-        // console.log(res.Data)
-        // res.Data.unshift({
-        //   name:'全部区域',
-        //   value:"allArea",
-        //   parent:""
-        // });
+
         // var temp=[];
-        // res.Data.map((el)=>{
-        //   if(el.parent==""){
-        //     temp.unshift({
-        //       name:"全部部门",
-        //       value:"allDepartment",
-        //       parent:el.value
+        // if(res.UserTopRole==0){
+        //     res.Data.unshift({
+        //       name:'全部区域',
+        //       value:"allArea",
+        //       parent:""
+        //     });
+
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+        //       }
         //     })
-        //   }
-        // })
+        // }else if(res.UserTopRole==1){
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+
+        //         this.type=[el.value,"allDepartment"]
+        //       }
+        //     })
+        // }else if(res.UserTopRole==2){
+        //     res.Data.map((el)=>{
+        //         this.type=[res.Data[0].value,res.Data[1].value]
+        //     })
+        // }
+
         // this.typeList=temp.concat(res.Data);
-        // console.log(this.typeList);
-
         var temp=[];
-        if(res.UserTopRole==0){
-            res.Data.unshift({
-              name:'全部区域',
-              value:"allArea",
-              parent:""
-            });
+        if(res.UserTopRole==0){ //总部负责人
 
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -293,9 +326,26 @@ export default {
                   value:"allDepartment",
                   parent:el.value
                 })
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==1){
+
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+        }else if(res.UserTopRole==1){ //区域负责人，有可能有多个区域权限
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -304,13 +354,42 @@ export default {
                   parent:el.value
                 })
 
-                this.type=[el.value,"allDepartment"]
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==2){
+
+
+            // 当有多个区域权限时
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+
+
+        }else if(res.UserTopRole==2){ //部门负责人，有可能有多个部门权限
             res.Data.map((el)=>{
                 this.type=[res.Data[0].value,res.Data[1].value]
             })
+
+            // 当有多个部门权限时
+            if(res.Data.length>2){
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:res.Data[0].value
+              })
+              this.type=[res.Data[0].value,"allDepartment"];
+            }
         }
 
         this.typeList=temp.concat(res.Data);
@@ -324,17 +403,21 @@ export default {
       this.getFunnelData();
     },
     changeFunnel(params){  //切换漏斗选区
+      this.init();
       this.title=params.name.split(':')[0];
-      this.tableData=[];
+      this.totalMoney=this.funnelDataAll[params.dataIndex].SumPredictTradeMoney;
+      this.tempData=this.funnelDataAll[params.dataIndex];
+      this.getTableData();
+    },
+    init(){
       this.pageIndex=0;
       this.pages=0;
+      this.tableData=[];
       this.loading2=true;
-      this.totalMoney=this.funnelDataAll[params.dataIndex].SumPredictTradeMoney;
-      this.getTableData(this.funnelDataAll[params.dataIndex]);
     },
     jumpSj(item){
       this.$router.push({
-        name:"shangjidetail",
+        name:"shangjidetailkeep",
         params:{
           id:item.OpportunitiesGUID
         }
@@ -343,19 +426,18 @@ export default {
     sortByKey(array, key) {  //模块排序(降序)
         array.sort((a, b) =>{
             var x = a[key]; var y = b[key];
-            return this.sortWay=='desc'?((x > y) ? -1 : ((x < y) ? 1 : 0)):((x < y) ? -1 : ((x > y) ? 1 : 0));
+            return this.sortWay=='descending'?((x > y) ? -1 : ((x < y) ? 1 : 0)):((x < y) ? -1 : ((x > y) ? 1 : 0));
         });
     },
     changeSort(filed){
-      this.sortType=filed;
-      this.sortWay=="desc"?this.sortWay="asc":this.sortWay="desc";
-      this.sortByKey(this.tableData,this.sortType);
-    }
-  },
-  watch:{
-    sortType(val){
-      this.sortWay="desc";
-      this.sortByKey(this.tableData,val);
+      if(this.sortType==filed){
+        this.sortWay=="descending"?this.sortWay="asc":this.sortWay="descending";
+      }else{
+        this.sortType=filed;
+        this.sortWay="descending";
+      }
+      this.init();
+      this.getTableData();
     }
   }
 }

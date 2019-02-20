@@ -7,14 +7,14 @@
     <div class="container overflow-touch">
       <template  v-if="!loading" >
         <template  v-if="searchList.length>0" >
-          <div class="content clearfix" v-for="(searchs,i) in searchList" :key="i" @click="finish(searchs.Name)" >
+          <div class="content clearfix" v-for="(searchs,i) in searchList" :key="i" @click="finish(searchs.Name,searchs.id)" >
             <div class="FullName  clearfix">
               <p class="text-over left" style="width:80%">
                 <i class="iconfont icon-gongsi" style="color:#b2b2b2!important"></i>
                 <span class="guanjianci" v-html="searchs.Name"></span>
               </p>
 
-                <span class="cunxu right" >{{searchs.Status?searchs.Status.substring(0,2):searchs.Status}}</span>
+                <span class="cunxu right" v-if="searchs.Status">{{searchs.Status?searchs.Status.substring(0,2):searchs.Status}}</span>
             </div>
 
             <!-- <div class="gupiao clearfix">
@@ -79,9 +79,10 @@ export default {
   },
   methods:{
       getData(){
-        this.keyword=this.keyword?this.keyword.replace(new RegExp(" ","gi"),""):"";
-        this.keyword=this.keyword.replace(new RegExp("（","gi"),"(");
-        this.keyword=this.keyword.replace(new RegExp("）","gi"),")");
+        // this.keyword=this.keyword?this.keyword.replace(new RegExp(" ","gi"),""):"";
+        this.keyword=this.keyword?this.keyword.trim():"";
+        // this.keyword=this.keyword.replace(new RegExp("（","gi"),"(");
+        // this.keyword=this.keyword.replace(new RegExp("）","gi"),")");
         if(!this.keyword){
           this.$vux.alert.show({
             title: '友情提示',
@@ -90,10 +91,11 @@ export default {
           return;
         }
         var reg=/^[(\u4e00-\u9fa5)|(a-z)|(A-Z)|&]+$/ig;
-        if(!reg.test(this.keyword)||this.keyword.length<2){
+        // if(!reg.test(this.keyword)||this.keyword.length<2){
+        if(this.keyword.length<2){
           this.$vux.alert.show({
             title: '友情提示',
-            content: '关键字长度必须不少于2个，且必须为中文或者英文!'
+            content: '关键字长度必须不少于2个!'
           })
           this.loading=false;
           return;
@@ -101,30 +103,26 @@ export default {
 
         this.loading=true;
         this.$http.post("/api/EnergizaSaleKHInfoController/GetEnterpriseInformation",{
-          FullName:this.keyword
+          FullName:encodeURIComponent(this.keyword)
         }).then((res)=>{
           this.loading=false;
           res.Data.data.map((el)=>{
             this.keyword.split("").map((el2)=>{
-              // if(el2!="s"&&el2!="p"&&el2!="a"&&el2!="n"&&el2!="t"&&el2!="y"&&el2!="l"&&el2!="e"&&el2!="c"&&el2!="o"&&el2!="r"&&el2!="d"){
-              //     el.Name=el.Name.replace(new RegExp(el2,"gi"),"<span style='color:#3079d5'>"+el2+"</span>");
-              // }
-              if(el2=='('||el2==')'){
+             if(el2=='('||el2==')'||el2=='*'||el2=='&'||el2=='\\'||el2=='['||el2==']'||el2=='.'||el2=='$'||el2=='?'||el2=='+'){
                 el2="\\"+el2;
               }
-              if(el2!="s"&&el2!="p"&&el2!="a"&&el2!="n"&&el2!="t"&&el2!="y"&&el2!="l"&&el2!="e"&&el2!="c"&&el2!="o"&&el2!="r"&&el2!="d"){
-                  el.Name=el.Name.replace(new RegExp(el2,"gi"),"<span style='color:#3079d5'>"+el2.replace('\\(','(').replace('\\)',')')+"</span>");
-              }
+              el.Name=el.Name.replace(new RegExp(el2,"gi"),`《${el2}》`);
             })
+            el.Name=el.Name.replace(/\\/ig,'').replace(new RegExp("《","gi"),`<span style='color:#3079d5'>`).replace(new RegExp("》","gi"),`</span>`);
           })
           this.searchList=res.Data.data;
-          console.log(this.searchList)
+          // console.log(this.searchList)
         })
       },
-      finish(params){
+      finish(name,id){
         // this.$router.go(-1)
-        params=params.replace(new RegExp( /<[^>]*>|<\/[^>]*>/gm,"gi"),"");  //去除html标签
-        this.$emit("checkfinish",params);
+        name=name.replace(new RegExp( /<[^>]*>|<\/[^>]*>/gm,"gi"),"");  //去除html标签
+        this.$emit("checkfinish",name,id);
         this.$router.go(-1)
       }
   }
@@ -142,7 +140,7 @@ export default {
         }
         width: 100%;
         height: 100%;
-        font-size: 10px;
+        font-size: 1rem;
         background-color: #f6f6f6;
         z-index: 99;
         left: 0;

@@ -36,9 +36,12 @@ export default {
   components:{
     Search,Checklist ,Group ,InlineLoading
   },
-  props:['prama','count','canEmpty'],
+  props:['prama','count','canEmpty',"beChose"],
   created(){
-    // console.log(this.prama)
+    // console.log(this.beChose)
+    this.value=this.beChose.map(el=>{
+          return el.id
+    });
   },
 
   data () {
@@ -100,6 +103,11 @@ export default {
         this.loading=false;
         this.getInitData();
       }
+    },
+    beChose(val){
+        this.value=val.map(el=>{
+          return el.id
+        });
     },
     key(val){
 

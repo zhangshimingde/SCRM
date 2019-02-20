@@ -12,7 +12,7 @@
             暂无数据..
           </div>
         </div>
-        
+
       </template>
       <template v-else>
         <div class="text_center" style="padding:40px 0;">
@@ -37,7 +37,9 @@ export default {
   },
   created(){
     this.getInitData()
+    // alert(this.chosePoepleType)
   },
+  props:['chosePoepleType','beChose','swit'],
   data () {
     return {
       loading:true,
@@ -62,16 +64,18 @@ export default {
       this.loading=true;
       this.$http.post("/api/AjaxLXRinfoController/GetLxrFromKhSearchByUsername",{
         OpportunitiesGUID:this.$route.params.id,
+        type:this.chosePoepleType?this.chosePoepleType:"", //1：商机 2：客户 3：联系人
         userName:""
       })
       .then((res)=>{
         // console.log(res);
         this.loading=false;
+        if(!res.Data)return;
         res.Data.map((el)=>{
           this.temp.push({
               key:el.SortGUID,
               value:el.LxrName
-          })  
+          })
         })
 
         this.options=this.temp;
@@ -85,6 +89,7 @@ export default {
       this.loading=true;
       this.$http.post("/api/AjaxLXRinfoController/GetLxrFromKhSearchByUsername",{
         OpportunitiesGUID:this.$route.params.id,
+        type:this.chosePoepleType?this.chosePoepleType:"", //1：商机 2：客户 3：联系人
         userName:val
       })
       .then((res)=>{
@@ -92,6 +97,7 @@ export default {
         this.loading=false;
         this.options=[];
         this.value=[];
+        if(!res.Data)return;
         res.Data.map((el)=>{
           this.options.push({
             // icon:el.UserCode,
@@ -101,8 +107,8 @@ export default {
         })
       })
     },
-    comfirm(){ 
-      if(this.value.length<1) return;
+    comfirm(){
+      // if(this.value.length<1) return;
       var params=[],hash={};
       this.value.map((el)=>{
         this.options.map((vl)=>{
@@ -110,16 +116,15 @@ export default {
             params.push({
                 name:vl.value,
                 id:vl.key
-            })  
+            })
           };
         })
-        
+
       });
-      console.log(params[0])
       this.$emit('choseFinish',params[0])
     },
     cancel(){
-      this.$emit('choseFinish','')
+      this.$emit('choseFinish','cancel')
     }
   },
   watch:{
@@ -128,7 +133,24 @@ export default {
         this.options=this.temp;
         this.value=[];
       }
-    }
+    },
+    swit(val){
+      // console.log(this.beChose)
+      if(typeof this.beChose == 'object'){
+        this.value=[this.beChose.id]
+      }else if(typeof this.beChose == 'string'){
+        if(!this.beChose){
+          this.value=[];
+          return;
+        }
+        this.options.map(el=>{
+          if(el.value==this.beChose){
+            this.value=[el.key]
+          }
+        })
+      }
+
+    },
   }
 }
 </script>
@@ -145,7 +167,7 @@ export default {
   background-color: white;
   .header{
     display: flex;
-    @h:3rem;  
+    @h:3rem;
     height: @h;
     line-height: @h;
     text-align: center;

@@ -27,7 +27,7 @@
         <div class="content" id="scroll-wrap">
           <template v-if="!loading2">
             <div id="scroll-box">
-                <list :data="datas"></list>
+                <list :data="datas" :showZP="true" @finishZP="getData(true)"></list>
                 <p class="text_center" v-if="loading" style="padding:9px 0">
                   <inline-loading></inline-loading>
                   <span style="color:#9d9d9d">数据加载中</span>
@@ -113,7 +113,7 @@ export default {
       showCondition:false,
       page:0,
       totalPage:0,
-      PageSize:50,
+      PageSize:15,
       key:"",
       px:'0',
       optionspx: [{

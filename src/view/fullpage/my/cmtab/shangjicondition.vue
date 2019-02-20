@@ -12,7 +12,12 @@
               </li>
             </ul>
           </div>
-
+          <div class="condition-box-item">
+            <p class="title">商机预警</p>
+            <ul class="data-list">
+              <li v-for="(item,index) in warnTypeList" style="padding:10px 30px;" :class="item.id==warnType.id?'active':''" :key="index" @click="chosewarnType('warnTypeList',item)">{{item.name}}</li>
+            </ul>
+          </div>
           <div class="condition-box-item">
             <p class="title">商机阶段</p>
             <ul class="data-list">
@@ -31,7 +36,7 @@
           <div class="condition-box-item">
             <p class="title">需求产品</p>
             <ul class="data-list">
-              <li v-for="(item,index) in products" v-if="item.id" :class="item.chose?'active':''" :key="index" @click="chosepd(item,index)" >{{item.name}}</li>     
+              <li v-for="(item,index) in products" v-if="item.id" :class="item.chose?'active':''" :key="index" @click="chosepd(item,index)" >{{item.name}}</li>
             </ul>
           </div>
 
@@ -50,7 +55,7 @@
         <span style="color:#9d9d9d">数据加载中</span>
       </p>
     </template>
-    
+
     <div class="clearfix btn-group absolute text_center">
       <div class="left" @click="resets">重置</div>
       <div class="left" @click="confirmChose">确定</div>
@@ -109,6 +114,11 @@ export default {
       products:[],
       areas:[],
       productsALL:[],
+      warnType:{
+          name:"",
+          id:""
+      },
+      warnTypeList:[],
 
     }
   },
@@ -119,6 +129,7 @@ export default {
       this.types=[];
       this.products=[];
       this.areas=[];
+      this.warnTypeList=[];
       this.productsALL=[];
 
       this.people={
@@ -142,6 +153,24 @@ export default {
           name:"",
           id:""
       };
+      this.warnType={
+          name:"",
+          id:""
+      };
+    },
+    chosewarnType(type,item){
+      if(item.id==this.warnType.id){
+        this.warnType={
+            name:"",
+            id:""
+        };
+      }else{
+        this.warnType={
+            name:item.name,
+            id:item.id
+        };
+      }
+
     },
     getInfoData(){
       var xsId,type;
@@ -150,7 +179,7 @@ export default {
       }else{
         xsId='';type=this.sjType;
       }
-      
+
       this.loading=true;
       this.$http.post("api/EnergizaSalesOpportunities/GetConditionListParam",{
         OpportunitiesName:this.oppName,
@@ -182,6 +211,13 @@ export default {
             id:el.CompanyGUID
           })
         })
+        res.Data.ListWarningType.map((el)=>{
+          this.warnTypeList.push({
+            name:el.Text,
+            id:el.Value,
+            chose:false
+          })
+        })
         // 所有产品
         res.Data.ListProduct.map((el)=>{
           this.productsALL.push({
@@ -205,7 +241,7 @@ export default {
           }
         });
 
-          
+
       })
     },
     chosePeopleFinish(params){ //选择主责人完毕
@@ -218,7 +254,7 @@ export default {
     },
     choseFinishItem(type,item){ //选择列表项
 
-      
+
       if(item.id==this[type].id){
         this[type]={
           name:"",
@@ -269,7 +305,8 @@ export default {
           status:this.statusValue.id,
           types:this.typesValue.id,
           products:pdid.join(','),
-          areas:this.areasValue.id
+          areas:this.areasValue.id,
+          warnType:this.warnType.id
         }
         // alert(pdid.join(','))
         this.$emit("finish",params)
@@ -297,6 +334,10 @@ export default {
         name:"",
         id:""
        };
+       this.warnType={
+            name:"",
+            id:""
+        };
        // this.typesValue={
        //  name:this.types[0].name,
        //  id:this.types[0].id
@@ -309,6 +350,9 @@ export default {
         name:"",
         id:""
        }];
+       this.warnTypeList.map((el)=>{
+          el.chose=false;
+        });
         // 产品初始筛选
         this.products=[];
         this.productsALL.map((el)=>{
@@ -379,7 +423,7 @@ export default {
   }
   .btn-group{
     width: 100%;
-    
+
     right: 0;
     bottom: 0;
     height: @h;

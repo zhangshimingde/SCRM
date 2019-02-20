@@ -17,14 +17,21 @@
             <tab-item :selected="indexTab==2" @on-item-click="indexTab=2">商机</tab-item>
           </tab>
         </div>
+
         <div class="nav cm-padding clearfix text_center" style="border-top:none">
-          <div style="width:100%" @click="showCondition=true">
+          <div class="left" style="border-right:1px solid #eaeaea" @click="showCondition=true">
             <i class="iconfont icon-shaixuan"></i> 高级筛选</div>
+          <div class="left">
+            <popup-radio :options="optionspx" v-model="px">
+              <div slot="popup-header" class="pop-title">选择排序条件</div>
+            </popup-radio>
+          </div>
         </div>
+
         <div class="content" id="scroll-wrap">
           <template v-if="!loading2">
             <div id="scroll-box">
-                <list :data="datas"></list>
+                <list :data="datas" :showZP="showZP" @finishZP="freshList"></list>
                 <p class="text_center" v-if="loading" style="padding:9px 0">
                   <inline-loading></inline-loading>
                   <span style="color:#9d9d9d">数据加载中</span>
@@ -82,9 +89,11 @@ export default {
       this.getData(true);
     })
     this.getData(true);
+    if(this.indexTab==2||this.indexTab==3){this.showZP=false}else{this.showZP=true}
   },
   data () {
     return {
+      showZP:true,
       khid:"",
       lxrphone:"",
       indexTab:1,
@@ -94,7 +103,7 @@ export default {
       showCondition:false,
       page:0,
       totalPage:0,
-      PageSize:50,
+      PageSize:15,
       key:"",
 
       condition:{
@@ -104,11 +113,23 @@ export default {
           areaId:"",
           warnType:"",
         },
+      px:"1",
+      optionspx: [{
+        key: '0',
+        value: '最近跟进时间'
+      }, {
+        key: '1',
+        value: '创建时间'
+      }],
       datas:[  //列表数据
       ]
     }
   },
   methods:{
+    freshList(){
+      // alert(2)
+      this.getData(true);
+    },
     getData(isEmpty){
       this.oppName=this.key;
       if(isEmpty){
@@ -116,6 +137,11 @@ export default {
         this.loading2=true;
       }
       this.loading = true;
+      var order;
+      switch(this.px){
+        case "0":order="LastFollowTime";break;
+        case "1":order="CreateTime";break;
+      }
       this.$http.post("/api/EnergizaSaleClueController/GetClueListMobile",{
         PageIndex:this.page,
         PageSize:this.PageSize,
@@ -128,7 +154,9 @@ export default {
         Telephone:this.lxrphone,
         KHGUID:this.khid,
         WarningType:this.condition.warnType,
-        MobileAllName:this.key
+        MobileAllName:this.key,
+        orderField:order,
+        orderByType:"DESC",
       })
       .then((res)=>{
         // console.log(res);
@@ -168,12 +196,16 @@ export default {
     }
   },
   watch:{
+    px(val){ //修改了排序条件
+      this.getData(true);
+    },
     key(val){ //搜索关键词置空
       if (!val) {
         this.getData(true);
       };
     },
     indexTab(val){
+      if(val==2||val==3){this.showZP=false}else{this.showZP=true}
       this.condition.warnType="";
       this.getData(true);
     }

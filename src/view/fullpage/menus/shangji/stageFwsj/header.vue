@@ -1,7 +1,7 @@
 <template>
     <div class="stage-header-wrap" id="stage-header">
       <div class="clearfix stage-header" id="stage-header-inner">
-        <div class="stage-header-item relative left" :class="{'status0':item.status=='status0','status1':item.status=='status1','status2':item.status=='status2','pr':prIndex==index2&&index!=prIndex}" v-if="!(index2<2&&isSanyun)"  v-for="(item,index2) in tabList" @click="preview(index2)">
+        <div class="stage-header-item relative left" :class="{'status0':item.status=='status0','status1':item.status=='status1','status2':item.status=='status2','pr':prIndex==index2&&index!=prIndex}" v-if="!(index2<2&&isSanyun)" :key="index2"  v-for="(item,index2) in tabList" @click="preview(index2)">
             <div class="status-icon">
               <div class="inner"></div>
             </div>
@@ -32,7 +32,7 @@ export default {
     // if(this.oppType=="a314f97a-2720-4cfe-b3d2-0d8ad7df8c34"||this.oppType=="fc40dbbe-94a7-44fd-936f-50f831eb6943"||this.oppType=="bfbd2e01-2226-42ca-8a89-e435bccadbcb"){
     //   this.isSanyun=true;
     //   setTimeout(()=>{
-        document.getElementById("stage-header-inner").style.width="28rem";
+        document.getElementById("stage-header-inner").style.width="35rem";
       // },100)
     // }
   },
@@ -53,10 +53,10 @@ export default {
         //   status:"status0",
         //   text:"方案竞争 <br>(赢率50%)"
         // },
-        // {
-        //   status:"status0",
-        //   text:"商务谈判 <br>(赢率70%)"
-        // },
+        {
+          status:"status0",
+          text:"商务谈判 <br>(赢率70%)"
+        },
         {
           status:"status0",
           text:"合同审批 <br>(赢率90%)"
@@ -78,7 +78,7 @@ export default {
         this.prIndex=index;
         var header=document.getElementById('stage-header');
         header.scrollLeft=index*100;
-      // }, 100) 
+      // }, 100)
 
     }
   },
@@ -110,7 +110,7 @@ export default {
     @w:7rem;
     width: 6*@w;
     .stage-header-item{
-      
+
       font-size: 0.9rem;
       text-align: center;
       width: @w;
@@ -151,7 +151,7 @@ export default {
       }
       &.pr{
           color: rgba(246, 134, 44, 1);
-          
+
           .status-icon{
             border: 2px solid #FBCFAB;
             background-color:  #FBCFAB;
@@ -160,7 +160,7 @@ export default {
             }
           }
         }
-      
+
       .status-icon{
         box-sizing: border-box;
         border-radius: 100%;

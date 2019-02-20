@@ -11,7 +11,7 @@
                 <check-icon :value.sync="item.IsChecked"><span :class="item.IsChecked?'act':'nor'">{{item.DetailContent}}</span></check-icon>
             </div>
         </cell-box>
-        
+
       </group>
       <foot @prev="prev" @next="next" @closeSj="closeSj" stageName="价值呈现" :canNext="canNext" :canPrev="canPrev"></foot>
     </div>
@@ -75,18 +75,18 @@ export default {
     }
   },
   watch:{
-    item0(val,oldval){ 
+    item0(val,oldval){
       if(oldval===null){return;}
       this.changeCheck(this.itemData.ListChrlid[0].stageDetailID,val)
     },
     // item1(val){
     //   this.changeCheck(this.itemData.ListChrlid[1].stageDetailID,val)
     // },
-    item2(val,oldval){ 
+    item2(val,oldval){
       if(oldval===null){return;}
      this.changeCheck(this.itemData.ListChrlid[2].stageDetailID,val)
     },
-    // item3(val){ 
+    // item3(val){
     //   this.changeCheck(this.itemData.ListChrlid[3].stageDetailID,val)
     // },
 

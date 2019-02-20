@@ -109,7 +109,8 @@ export default {
           status:"",
           types:"",
           products:"",
-          areas:""
+          areas:"",
+          warnType:""
         },
       optionspx: [{
         key: '0',
@@ -182,7 +183,7 @@ export default {
       this.$http.post("/api/EnergizaSalesOpportunities/GetConditionList",{
         OpportunitiesName :this.key,
         PageIndex:this.page,
-        PageSize:50,
+        PageSize:15,
         StageGUIDMultipleChoice:this.condition.status,
         TypeGUIDMultipleChoice:this.condition.types,
         ProductCodeMultipleChoice:this.condition.products,
@@ -195,7 +196,8 @@ export default {
         // IsIndex:type,
         IndexGUID:xsId,
         KHGUID:this.khid,
-        LXRGUID:this.lxrid
+        LXRGUID:this.lxrid,
+        WarningType:this.condition.warnType,
       })
       .then((res)=>{
 
@@ -247,7 +249,8 @@ export default {
           status:"",
           types:"",
           products:"",
-          areas:""
+          areas:"",
+          warnType:""
       }
     }
   },

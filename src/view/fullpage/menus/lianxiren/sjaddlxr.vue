@@ -26,6 +26,11 @@
           </div>
         </cell-box>
         <cell-box>
+          <div class="form-item clearfix radio readw" style="padding-right:0">
+            <popup-radio title="性别" :options="GenderList" v-model="Gender"></popup-radio>
+          </div>
+        </cell-box>
+        <cell-box>
           <div class="form-item clearfix sp" style="" @click="business=true">
             <x-input title="负责业务"  v-model="baseInfo.business" placeholder="点击选择(必填)" readonly  text-align="right"></x-input>
           </div>
@@ -253,6 +258,8 @@ export default {
         key: 8,
         value: 3
       }],
+      Gender:"1",
+      GenderList:[{value:'男',key:'1'},{value:'女',key:'0'},{value:'不详',key:''}],
       baseInfo:{
         name:"",
         company:"",
@@ -365,7 +372,7 @@ export default {
              // DepartMent:"",
              JobTitle:this.baseInfo.jobs,
              Business:this.baseInfo.business,
-             // Gender:lic,
+             Gender:this.Gender,
              Position:lic,
              QQ:this.baseInfo.qq,
              PositionStation:this.baseInfo.reason,

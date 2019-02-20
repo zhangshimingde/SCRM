@@ -43,13 +43,23 @@
         <cell-box is-link>
           <div class="form-item clearfix readw" @click="choseskehutype=true" >
             <span class="left banner" v-bind:style="{'color':kehuTypeIconshow?'red!important':'#000'}"> 客户分类</span>
-            <span class="right content">{{kehuType.name}} <icon  type="warn" v-if="kehuTypeTipshow"></icon></span>
+            <span class="right content">
+              <span v-for="(item,index) in kehuType" :key="index">
+                {{item.name}}
+              </span>
+              <icon type="warn" v-if="kehuTypeTipshow"></icon>
+            </span>
           </div>
         </cell-box>
         <cell-box is-link v-if="showKehuStatus">
           <div class="form-item clearfix readw" @click="choseskehustatus=true" >
             <span class="left banner" v-bind:style="{'color':kehuStatusIconshow?'red!important':'#000'}">客户存量业态</span>
-            <span class="right content">{{kehuStatus.name}} <icon  type="warn" v-if="kehuStatusTipshow"></icon></span>
+            <span class="right content">
+              <span v-for="(item,index) in kehuStatus" :key="index">
+                {{item.name}}
+              </span>
+              <icon type="warn" v-if="kehuStatusTipshow"></icon>
+            </span>
           </div>
         </cell-box>
         <cell-box is-link>
@@ -76,33 +86,33 @@
       <!-- 公司层级 -->
       <div v-transfer-dom>
         <popup v-model="chosescompany" :popup-style="{background:'white'}" position="right" width="80%">
-          <danx :prama="companyList"  @choseFinish="choseCompanyFinish"></danx>
+          <danx :prama="companyList" :beChose="[company]" @choseFinish="choseCompanyFinish"></danx>
         </popup>
       </div>
 
       <!-- 客户分类 -->
       <div v-transfer-dom>
         <popup v-model="choseskehutype" :popup-style="{background:'white'}" position="right" width="80%">
-          <danx :prama="kehuTypeList"  @choseFinish="choseKuhuTypeFinish"></danx>
+          <danx :prama="kehuTypeList" count="multiple" :beChose="[kehuType]"  @choseFinish="choseKuhuTypeFinish"></danx>
         </popup>
       </div>
 
       <!-- 客户存量业态 -->
       <div v-transfer-dom>
         <popup v-model="choseskehustatus" :popup-style="{background:'white'}" position="right" width="80%">
-          <danx :prama="kehuStatusList"  @choseFinish="choseKuhuStatusFinish"></danx>
+          <danx :prama="kehuStatusList" count="multiple" :beChose="[kehuStatus]"  @choseFinish="choseKuhuStatusFinish"></danx>
         </popup>
       </div>
 
       <!-- 所属区域 -->
       <div v-transfer-dom>
         <popup v-model="chosesarea" :popup-style="{background:'white'}" position="right" width="80%">
-          <danxs :prama="areaList"  @choseFinish="choseAreaFinish"></danxs>
+          <danxs :prama="areaList" :beChose="[area]" @choseFinish="choseAreaFinish"></danxs>
         </popup>
       </div>
 
       <!-- 选择客户 -->
-      <kehulist v-if="chosekehu" @choseFinish="choseKehuFinish"></kehulist>
+      <kehulist v-if="chosekehu" :id="currentId" @choseFinish="choseKehuFinish"></kehulist>
 
       <!-- 工商查询 -->
       <gslist :fullName="fullName" @checkfinish="checkfinish" v-if="gslistShow"></gslist>
@@ -163,6 +173,7 @@ export default {
         name:"必填",
         id:""
       },
+      currentId:"",
       fullName:"",
       name:"",
       zzr:{
@@ -180,6 +191,7 @@ export default {
         name:"必填",
         id:""
       },
+      httpLock:false,
       companyIconshow:false,
       areaIcon:false,
       fullNameTip:"",
@@ -192,14 +204,14 @@ export default {
       kehuTypeTipshow:"",
       kehuStatusIconshow:"",
       kehuStatusTipshow:"",
-      kehuType:{
+      kehuType:[{
         name:"必填",
         id:""
-      },
-      kehuStatus:{
+      }],
+      kehuStatus:[{
         name:"必填",
         id:""
-      },
+      }],
       showKehuStatus:false,
       kehuTypeList:[],
       kehuStatusList:[]
@@ -210,8 +222,16 @@ export default {
       this.$http.get("/api/EnergizaSaleKHInfoController/GetKHAddCondition")
       .then((res)=>{
         // console.log(res)
-        this.kehuTypeList=[{name:"开发商",id:"开发商"},{name:"供应商",id:"供应商"},{name:"存量地产",id:"存量地产"}];
-        this.kehuStatusList=[{name:"公寓",id:"公寓"},{name:"商业地产",id:"商业地产"},{name:"物业",id:"物业"}];
+        // this.kehuTypeList=[{name:"开发商",id:"开发商"},{name:"供应商",id:"供应商"},{name:"内部客户",id:"内部客户"},{name:"存量地产",id:"存量地产"}];
+        // this.kehuStatusList=[{name:"公寓",id:"公寓"},{name:"商业地产",id:"商业地产"},{name:"物业",id:"物业"},{name:"写字楼",id:"写字楼"},{name:"园区",id:"园区"}
+        // ,{name:"购物中心",id:"购物中心"},{name:"住宅社区",id:"住宅社区"},{name:"专业市场",id:"专业市场"},{name:"底商",id:"底商"},{name:"孵化器",id:"孵化器"},{name:"共享办公",id:"共享办公"}];
+
+        this.kehuTypeList=res.Data.ListCustomerType.map(el=>{
+          return {name:el.label,id:el.value}
+        });
+        this.kehuStatusList=res.Data.ListCustomerFormats.map(el=>{
+          return {name:el.label,id:el.value}
+        });
         res.Data.CompanyLevel.map((el)=>{
           this.companyList.push({
               name:el.Text,
@@ -272,7 +292,16 @@ export default {
         name:params.name,
         id:params.id
       };
-      params.id=="3ea9b192-a21c-4135-be7e-493a4cf892b3"?this.prevKh=false:this.prevKh=true;
+      if(params.id=="3ea9b192-a21c-4135-be7e-493a4cf892b3"){
+        this.prevKh=false;
+        this.kehu={
+          name:"必填",
+          id:""
+        }
+      }
+      else{
+        this.prevKh=true;
+      }
     },
     choseAreaFinish(params){
       this.chosesarea=false;
@@ -282,23 +311,24 @@ export default {
       };
     },
     choseKuhuTypeFinish(params){
+      // console.log(params);
       this.choseskehutype=false;
-      this.kehuType={
-        name:params.name,
-        id:params.id
-      };
-      if(params.name=='存量地产'){
+      this.kehuType=params;
+      let temp=params.map(el=>el.id);
+      if(temp.indexOf("存量地产")>-1){
         this.showKehuStatus=true;
       }else{
+        //客户分类去掉存量地产之后，清空存量客户业态
+        this.kehuStatus=[{
+          name:"必填",
+          id:""
+        }];
         this.showKehuStatus=false;
       }
     },
     choseKuhuStatusFinish(params){
       this.choseskehustatus=false;
-      this.kehuStatus={
-        name:params.name,
-        id:params.id
-      };
+      this.kehuStatus=params;
     },
     choseKehuFinish(params){ //选择客户完成
       this.chosekehu=false;
@@ -330,14 +360,16 @@ export default {
 
       })
     },
-    checkfinish(params){
+    checkfinish(name,id){
       this.gslistShow=false;
-      if(params){
-        this.fullName=params;
+      if(name){
+        this.fullName=name;
+        this.currentId=id;
       }
     },
 
     goSubmit(){
+      if(this.httpLock)return;
       let colorStyle='color:red;'
       let IconStyle='error'
       if(!this.company.id){
@@ -367,7 +399,7 @@ export default {
         this.nameIcon=""
       }
 
-      if(!this.kehuType.id){
+      if(this.kehuType[0].id==''){
         this.kehuTypeIconshow=colorStyle
         this.kehuTypeTipshow=IconStyle
       }else{
@@ -375,7 +407,7 @@ export default {
         this.kehuTypeTipshow=""
       }
 
-      if(!this.kehuStatus.id&&this.showKehuStatus){
+      if(this.kehuStatus[0].id==''&&this.showKehuStatus){
         this.kehuStatusIconshow=colorStyle
         this.kehuStatusTipshow=IconStyle
       }else{
@@ -390,7 +422,8 @@ export default {
         this.topIconshow=""
         this.topTipshow=""
       }
-      if(this.name&&this.fullName&&this.zzr.id&&this.company.id&&this.area.id&&this.kehuType.id){//必填项
+
+      if(this.name&&this.fullName&&this.zzr.id&&this.company.id&&this.area.id&&this.kehuType[0].id){//必填项
           if(this.prevKh==true&&!this.kehu.id){
             this.$vux.alert.show({
               title: '友情提示',
@@ -399,7 +432,8 @@ export default {
             return;
           }
 
-          if(this.showKehuStatus&&!this.kehuStatus.id){
+
+          if(this.showKehuStatus&&this.kehuStatus[0].id==''){
             this.$vux.alert.show({
               title: '友情提示',
               content: '必填项请填写完整！'
@@ -410,6 +444,10 @@ export default {
           this.$vux.loading.show({
              text: '正在提交..'
             })
+
+          let kehuTypeId=this.kehuType.map(el=>el.id);
+          let kehuStatus=this.kehuStatus.map(el=>el.id);
+          this.httpLock=true;
           this.$http.post("/api/EnergizaSaleKHInfoController/AddCustomer",{
             FullName:this.fullName,
             SortName:this.name,
@@ -417,11 +455,12 @@ export default {
             KHCompanyLevelCode:this.company.id,
             ParentKHGUID:this.kehu.id,
             BuGUID:this.area.id,
-            CustomerType:this.kehuType.id,
-            CustomerFormats:this.showKehuStatus?this.kehuStatus.id:""
+            CustomerType:kehuTypeId.join(','),
+            CustomerFormats:this.showKehuStatus?kehuStatus.join(','):""
           })
           .then((res)=>{
               // console.log(res)
+              this.httpLock=false;
               this.$vux.loading.hide();
               var _this=this;
               if(res.Success){
@@ -454,6 +493,9 @@ export default {
 
               }
 
+          })
+          .catch(error=>{
+              this.httpLock=false;
           })
 
       }else{
@@ -495,6 +537,9 @@ export default {
     }
     .content{
        color: #757575!important;
+       span{
+         color: #757575!important;
+       }
        max-width: 65%;
        text-align: right;
        overflow: hidden;

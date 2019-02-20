@@ -46,7 +46,7 @@
 
     <!-- <div class="fixed cancel-btn" @click="cancel">取消</div> -->
   </div>
-      
+
 </template>
 
 <script>
@@ -69,10 +69,10 @@ export default {
 
 
     // 自定义返回事件
-     window.history.pushState(null, null, ""); 
-     window.addEventListener("popstate", ()=> { 
+     window.history.pushState(null, null, "");
+     window.addEventListener("popstate", ()=> {
         this.cancel();
-      }, false); 
+      }, false);
   },
   data () {
     return {
@@ -103,19 +103,19 @@ export default {
         res.Data.SOListDataTable.map((el)=>{
            this.data.push(el);
         })
-       
+
       })
     },
     loadMore() {
       this.loading2 = true;
       this.page++;
       if(this.page>this.totalPage) return;
-      console.log(this.page);
+      // console.log(this.page);
       this.getData(false);
     },
     sub(){ //搜索
       if(!this.key) return;
-      
+
       this.page=0;
       this.getData(true);
     },
@@ -163,6 +163,7 @@ export default {
   left: 0;
   top:0;
   color: #666;
+  z-index:4;
   .contents{
     flex-grow:1;
     background-color: white;

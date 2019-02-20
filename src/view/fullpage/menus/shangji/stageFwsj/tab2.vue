@@ -9,8 +9,8 @@
 
         <cell-box v-for="(item ,inde ) in itemData.ListChrlid" :key="inde">
             <div style="width:100%">
-              
-              
+
+
               <template  v-if="item.DetailContent=='明确竞争对手信息'">
                 <check-icon readonly :value.sync="item.IsChecked"><span :class="item.IsChecked?'act':'nor'">{{item.DetailContent}}</span></check-icon>
                 <i class="iconfont icon-tianjia right" style="font-size:1.2rem;" v-if="item.IsChecked" @click="comp=true"></i>
@@ -65,10 +65,10 @@
 <script>
 import {TransferDom,CellBox,Group ,InlineLoading,Popup,CheckIcon   } from 'vux'
 import foot from './footer'
-import write from './write'
-import comp from './comp'
-import follow from './follow'
-import jzds from './jzds'
+import write from '../stage/write'
+import comp from '../stage/comp'
+import follow from '../stage/follow'
+import jzds from '../stage/jzds'
 export default {
   name: '',
   components:{
@@ -79,7 +79,7 @@ export default {
   },
   props:['itemData','oppType'],
   mounted(){
-    
+
     // alert(this.$route.params.id)
       // console.log(this.itemData)
       this.item0=this.itemData.ListChrlid[0].IsChecked;
@@ -117,7 +117,7 @@ export default {
       item1:null,//制定竞争对手策略
       item2:null,//明确客户决策流程
       item3:null,//明确客户项目小组
-      item0List:[], 
+      item0List:[],
       item1List:[],
       item2List:[],
     }
@@ -146,7 +146,7 @@ export default {
           this.item1List=res.Data;
           // console.log(res.Data)
         })
-        
+
     },
     getList2(){
         this.loading2=true;
@@ -228,7 +228,7 @@ export default {
         if(this.item0List.length==0){
           this.itemData.ListChrlid[0].IsChecked=false;
         }
-        
+
         return ;
       }
 
@@ -282,7 +282,7 @@ export default {
     }
   },
   watch:{
-    item0(val,oldval){ 
+    item0(val,oldval){
       if(oldval===null){return;}
       // console.log(val)
       if(val){ //明确客户基础信息 跟进记录 选中
@@ -293,7 +293,7 @@ export default {
       }
       // this.changeCheck(this.itemData.ListChrlid[0].stageDetailID,val)
     },
-    item1(val,oldval){ 
+    item1(val,oldval){
       if(oldval===null){return;}
       // console.log(val)
       if(this.item1||this.item2){
@@ -310,7 +310,7 @@ export default {
       }
       this.changeCheck(this.itemData.ListChrlid[1].stageDetailID,val)
     },
-    item2(val,oldval){ 
+    item2(val,oldval){
       if(oldval===null){return;}
       // console.log(val)
       if(this.item1||this.item2){
@@ -327,7 +327,7 @@ export default {
       }
       this.changeCheck(this.itemData.ListChrlid[2].stageDetailID,val)
     },
-    item3(val,oldval){ 
+    item3(val,oldval){
       if(oldval===null){return;}
       // console.log(val)
       this.changeCheck(this.itemData.ListChrlid[3].stageDetailID,val)

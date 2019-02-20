@@ -6,7 +6,7 @@
 export default {
   name: 'category',
   mounted (){
-  	
+
       this.inits(this.option);
   },
   props:['id','option','styles'],
@@ -47,7 +47,7 @@ export default {
                 dataIndex: params.dataIndex,
             });
         });
-        
+
 
       }else if(op.series[0].name=='非成交关闭商机分布'){
 
@@ -61,20 +61,40 @@ export default {
         //     _this.$emit("changeBar",params);
 
         // });
+      }else if(op.series[0].stack=='季度成交'){
+
+        // _this.chart.on('click', function (params) {
+        //     _this.$emit("changeSaleYC",params);
+        // });
+
+        // 柱状图非图形区域点击交互
+        _this.chart.getZr().on('click',params=>{
+
+            const pointInPixel= [params.offsetX, params.offsetY];
+            if (_this.chart.containPixel('grid',pointInPixel)) {
+                let xIndex=_this.chart.convertFromPixel({seriesIndex:0},[params.offsetX, params.offsetY])[0];
+                /*事件处理代码书写位置*/
+                var op=_this.chart.getOption();
+                var name=op.xAxis[0].data[xIndex];
+                // console.log(name);
+                _this.$emit("changeSaleYC",{name:name});
+            }
+        });
+
       }
-    
+
     },
   	change(value){
   		console.log(value)
   	}
   },
   watch:{ //监听数据变化，重新绘制图形
-	  option:{  
-        handler:function(val,oldval){  
+	  option:{
+        handler:function(val,oldval){
              this.inits(val);
-        },  
-        deep:true//对象内部的属性监听，也叫深度监听  
-    }  
+        },
+        deep:true//对象内部的属性监听，也叫深度监听
+    }
   }
 }
 </script>

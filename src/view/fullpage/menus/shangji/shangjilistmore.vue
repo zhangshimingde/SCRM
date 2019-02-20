@@ -15,6 +15,8 @@
                         <span class="left stage" v-if="listdata.StageName&&listdata.StageName=='确认中'" style="background:#0fcbaf">确</span>
                         <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName=='需求引导'" style="background:#0FCBAF">需</span>
                         <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName=='待确认'" style="background:#666">待</span>
+                        <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName=='草稿'" style="background:#666">稿</span>
+                        <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName=='挂起'" style="background:#666">挂</span>
                         <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName.indexOf('非成交关闭')>-1" style="background:#b2b2b2">非</span>
                         <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName.indexOf('商机激活')>-1" style="background:#b2b2b2">商</span>
                         <span class="left stage" v-else-if="listdata.StageName&&listdata.StageName=='成交关闭'" style="background:#71C671">成</span>
@@ -107,7 +109,7 @@ export default {
       var _this=this;
       this.$vux.confirm.show({
         title: '友情提示',
-        content: '确定要此商机？',
+        content: '确定要删除此商机？',
         onConfirm () {
 
           _this.$http.post("/api/EnergizaSalesOpportunities/DelModelMulti",{
@@ -155,6 +157,7 @@ export default {
               content: '分配成功！'
             })
             this.data[this.inde].ResponsibleName=params.name;
+            this.$emit('finishFP');
         }else{
           this.$vux.alert.show({
               title: '友情提示',

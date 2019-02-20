@@ -1,10 +1,11 @@
 <template>
     <div id="sjdetail">
-      <div class="relative">
-          <img src="static/img/pic_l.png" alt="" style="height:50%;left:0;bottom:0;z-index:2" class="absolute">
-          <img src="static/img/pic_r.png" alt="" style="height:50%;right:0;bottom:0;z-index:2" class="absolute">
-          <swiper  height="140px" dots-position="center" dots-class="dot" class="sw">
-            <swiper-item class="black">
+      <div class="relative" style="background:white">
+          <img src="static/img/pic_l.png" alt="" style="height:50%;left:0;bottom:0;z-index:1" class="absolute">
+          <img src="static/img/pic_r.png" alt="" style="height:50%;right:0;bottom:0;z-index:1" class="absolute">
+
+          <swiper :options="swiperOption" ref="mySwiper"  class="swipe-plungin sw">
+            <swiper-slide class="black swipe-item">
               <div class="base-info-wrap text_center">
 
 
@@ -15,15 +16,15 @@
                   <a style="color:#3079D5;margin-left:1rem;"  :href="'tel:'+swiperInfo1.phone"><i class="iconfont icon-dianhua" style="margin-right:0.5rem"></i>呼叫</a>
                 </div>
               </div>
-            </swiper-item>
-            <swiper-item class="black">
+            </swiper-slide>
+            <swiper-slide class="black swipe-item">
               <div class="people-info-wrap">
 
                 <div class="people-line clearfix">
                   <span class="left banner">跟进人</span>
                   <ul class="right people-list">
 
-                    <li  @click="checkpeoplemultiple=true">
+                    <li  @click="choseTeamer" v-if="canEdit">
                       <div class="people-pic cm-bac" style="background-position:center;background-image:url(static/img/add.png);background-size:50%;background-repeat:no-repeat;border:1px solid #eaeaea"></div>
                     </li>
                     <li v-for="(item,index) in swiperInfo2.team" @click="removePeople(item,index)" :key="index">
@@ -34,12 +35,14 @@
                   </ul>
                 </div>
               </div>
-            </swiper-item>
+            </swiper-slide>
+            <div class="swiper-pagination"  slot="pagination"></div>
           </swiper>
+
       </div>
       <div v-if="swiperInfo1.status=='商机'" style="margin-top:15px"></div>
       <div class="panel-wrap clearfix"  id="tab-data" v-else>
-          <router-link :to="{name:'toshangji',params:{id:$route.params.id,name:swiperInfo1.people,phone:swiperInfo1.phone}}" class="xs-panel relative left sj-panel-item">
+          <router-link :to="{name:'toshangji',params:{id:$route.params.id,sex:swiperInfo1.sex,name:swiperInfo1.people,phone:swiperInfo1.phone}}" class="xs-panel relative left sj-panel-item">
             <i class="iconfont icon-shangji c-i sj" style="color:#EB3529"></i>
             <span class=" c-t">转商机</span>
           </router-link>
@@ -62,7 +65,7 @@
         <div class="tab-content">
           <followrecord v-show="tabIndex==0" :id="$route.params.id" :ProType="1"></followrecord>
           <template v-if="!loading">
-            <detail v-show="tabIndex==1" :detailInfo="detailInfo"></detail>
+            <detail v-show="tabIndex==1" @freshGJR="setTeam" :detailInfo="detailInfo"></detail>
           </template>
         </div>
       </div>
@@ -71,7 +74,7 @@
       <!-- 经营团队 -->
       <div v-transfer-dom >
         <popup v-model="checkpeoplemultiple" :popup-style="{background:'white'}" position="right" width="80%">
-          <checkpeoplemultiple :deleteId="deleteId" :id="$route.params.id" :isClue="true" @choseFinish="choseMultiplePeopleFinish"></checkpeoplemultiple>
+          <checkpeoplemultiple :deleteId="deleteId" :id="$route.params.id" :beChose="beChoseM" :flag="checkpeoplemultiple" :isClue="true" @choseFinish="choseMultiplePeopleFinish"></checkpeoplemultiple>
         </popup>
       </div>
 
@@ -79,15 +82,17 @@
 </template>
 
 <script>
-import { TransferDom,CellBox,Popup ,Group ,InlineLoading,Swiper,SwiperItem,Tab, TabItem,Scroller   } from 'vux'
+import { TransferDom,CellBox,Popup ,Group ,InlineLoading,Tab, TabItem,Scroller   } from 'vux'
 import detail from "./compo/xiansuodetailform"
 import followrecord from "../../../../components/common/followrecordXS"
 import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from './compo/checkpeoplemultiple';
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
+import 'swiper/dist/css/swiper.css'
 export default {
   name: '',
   components:{
-   CellBox ,Group ,InlineLoading,Popup,Swiper,SwiperItem,Tab, TabItem,detail,checkpeoplemultiple,checkpeople,followrecord,Scroller
+   CellBox ,Group ,InlineLoading,Popup,Tab,swiper, swiperSlide, TabItem,detail,checkpeoplemultiple,checkpeople,followrecord,Scroller
   },
   beforeDestroy () {
         this.$cmBus.$off('changeFieldXS');
@@ -116,10 +121,22 @@ export default {
       return value.substring(0,10)
     }
   },
+  computed: {
+      swiper() {
+        return this.$refs.mySwiper.swiper
+      }
+  },
   data () {
     return {
+      swiperOption: {
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true
+        }
+      },
       off:false,
       loading:false,
+      beChoseM:[],
       checkpeoplemultiple:false,
       deleteId:"",
       company:"",
@@ -130,17 +147,27 @@ export default {
         status:"",
         people:"",
         phone:"",
+        sex:""
       },
       swiperInfo2:{
         team:[]
       },
+      canEdit:false
 
     }
   },
   methods:{
+    choseTeamer(){
+      this.checkpeoplemultiple=true;
+      this.beChoseM=this.swiperInfo2.team.map(el=>{
+        return el.id;
+      });
+      // console.log(this.beChoseM)
+    },
     getInit(){  //获取线索信息
       this.loading=true;
       this.$http.post("/api/EnergizaSaleClueController/GetOpportunitiesKH",{
+      // this.$http.post("/api/EnergizaSaleClueController/GetDetailInfo",{
         OpportunityGUID:this.$route.params.id
       })
       .then((res)=>{
@@ -154,12 +181,21 @@ export default {
           this.swiperInfo1={
             name:res.Data.CustomerName,
             status:res.Data.OpportunityStatusDesc,
+            // status:res.Data.OpportunityStatusName,
             people:res.Data.ContactName,
             phone:res.Data.Telephone,
+            sex:res.Data.Sex
           };
+
+          (this.swiperInfo1.status=="商机"||this.swiperInfo1.status=="关闭")?this.canEdit=false:this.canEdit=true;
 
       });
 
+      this.setTeam();
+
+    },
+    setTeam(){
+      this.swiperInfo2.team=[];
       this.$http.get("/api/EnergizaSaleClueController/GetFollower?OpportunityGUID="+this.$route.params.id)
       .then((res)=>{
         // console.log(res);
@@ -175,11 +211,19 @@ export default {
           })
       })
     },
+    judgeGjrArea(userId,fn){//比较所选跟进人是否同一区域
+        this.$http.post('/api/EnergizeAction/IsSameBuGuid',{
+          GuidStr:userId
+        })
+        .then(res=>{
+          // console.log(res);
+          if(fn) fn(res);
+        })
+    },
     choseMultiplePeopleFinish(params){ //多选人团队成员
       this.checkpeoplemultiple=false;
       if(!params) return; //点了取消
-      // console.log(params);
-      // this.team=[];
+      let tempTeam=this.swiperInfo2.team.map(el=>{return el});
       params.map((el)=>{
         // 去重
         var flag=true;
@@ -189,68 +233,81 @@ export default {
           }
         });
         if(!flag) return;
-        // end
-
         this.swiperInfo2.team.push({
           name:el.name,
           id:el.id,
           avater:"",
           code:el.code
         })
-
       })
 
-
-      this.swiperInfo2.team.map((el)=>{
-        this.getUserData(el.id,(data)=>{
-          if(data.UserIcon){
-            el.avater=data.UserIcon;
-          }
-
-        })
+      let ids=this.swiperInfo2.team.map(el=>{
+        return el.id
       })
-
-
-      // 提交修改信息
-      this.$vux.loading.show({
-         text: '正在指派..'
-        })
-
-      var zpList=[],idList=[];
-      this.swiperInfo2.team.map((el)=>{
-        zpList.push({
-          OpportunityGUID:this.$route.params.id,
-          FollowerGUID:el.id,
-          FollowerCode:el.code,
-          FollowerName:el.name
-        })
-        idList.push(el.id);
-      })
-      // console.log(zpList)
-      // this.$http.post("/api/EnergizaSaleClueController/SaveFollowerArrange",{
-      //   StrFollowers:JSON.stringify(zpList)
-      // })
-      this.$http.post("/api/EnergizaSaleClueController/SetClueFollower",{
-          oppGuidStr:this.$route.params.id,
-          followerGuid:idList.join(",")
-      })
-      .then((res)=>{
-        this.$vux.loading.hide()
-        if(res.Success){
+      this.judgeGjrArea(ids.join(","),res=>{
+        if(!res.Data.IsSameBuGuid){
             this.$vux.alert.show({
-              title: '友情提示',
-              content: '指派成功！'
+                  title: '友情提示',
+                  content: '跟进人成员不属于同一个区域！'
             })
+            this.swiperInfo2.team=tempTeam.map(el=>{return el});
         }else{
-          this.$vux.alert.show({
-              title: '友情提示',
-              content: res.Message
+
+            this.swiperInfo2.team.map((el)=>{
+              this.getUserData(el.id,(data)=>{
+                if(data.UserIcon){
+                  el.avater=data.UserIcon;
+                }
+              })
             })
+            // 提交修改信息
+            this.$vux.loading.show({
+              text: '正在指派..'
+            })
+            var zpList=[],idList=[];
+            this.swiperInfo2.team.map((el)=>{
+              zpList.push({
+                OpportunityGUID:this.$route.params.id,
+                FollowerGUID:el.id,
+                FollowerCode:el.code,
+                FollowerName:el.name
+              })
+              idList.push(el.id);
+            })
+            this.$http.post("/api/EnergizaSaleClueController/SetClueFollower",{
+                oppGuidStr:this.$route.params.id,
+                followerGuid:idList.join(",")
+            })
+            .then((res)=>{
+              this.$vux.loading.hide()
+              if(res.Success){
+                this.$cmBus.$emit('freshAreaClue'); //指派成功后，刷新线索区域
+                this.$vux.alert.show({
+                  title: '友情提示',
+                  content: '指派成功！'
+                })
+
+              }else{
+                // console.log(tempTeam)
+
+                this.swiperInfo2.team=tempTeam.map(el=>{return el});
+                this.$vux.alert.show({
+                    title: '友情提示',
+                    content: res.Message
+                  })
+              }
+            })
+            // end
+
+
         }
       })
-      // end
+
+
+
     },
     removePeople(item,index){ //删除团队成员
+    if(!this.canEdit)return;
       if(this.swiperInfo2.team.length<=1){
         this.$vux.alert.show({
               title: '友情提示',

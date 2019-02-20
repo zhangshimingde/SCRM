@@ -54,8 +54,8 @@
 
 <script>
 import {TransferDom, Tab, TabItem,Search,PopupRadio ,Popup, Group,InlineLoading  } from 'vux'
-import list from './shangjilistmore';
-import condition from './shangjicondition';
+import list from '@/view/fullpage/menus/shangji/shangjilistmore';
+import condition from '@/view/fullpage/menus/shangji/shangjicondition';
 export default {
   name: '',
   directives: {
@@ -102,7 +102,8 @@ export default {
           status:"",
           types:"",
           products:"",
-          areas:""
+          areas:"",
+          warnType:""
         },
       optionspx: [{
         key: '0',
@@ -149,7 +150,7 @@ export default {
         this.$http.post("/api/EnergizaSalesOpportunities/GetConditionList",{
             OpportunitiesName :this.key,
             PageIndex:this.page,
-            PageSize:50,
+            PageSize:15,
             StageGUIDMultipleChoice:this.condition.status,
             TypeGUIDMultipleChoice:this.condition.types,
             ProductCodeMultipleChoice:this.condition.products,
@@ -162,7 +163,8 @@ export default {
             IndexGUID:'ff0d1cd6-94d3-458c-afd2-8bc477756cb4',
             KHGUID:this.khid,
             LXRGUID:this.lxrid,
-            isWeiwinHistoryList:true
+            isWeiwinHistoryList:true,
+            WarningType:this.condition.warnType,
           })
           .then((res)=>{
               res.Data.PagingInfo.TotalRecords>0?this.hasXs=true:this.hasXs=false;
@@ -195,7 +197,7 @@ export default {
         this.$http.post("/api/EnergizaSalesOpportunities/GetConditionList",{
           OpportunitiesName :this.key,
           PageIndex:this.page,
-          PageSize:50,
+          PageSize:15,
           StageGUIDMultipleChoice:this.condition.status,
           TypeGUIDMultipleChoice:this.condition.types,
           ProductCodeMultipleChoice:this.condition.products,
@@ -208,6 +210,7 @@ export default {
           IndexGUID:xsId,
           KHGUID:this.khid,
           LXRGUID:this.lxrid,
+          WarningType:this.condition.warnType,
           isConcern:true
         })
         .then((res)=>{
@@ -241,6 +244,7 @@ export default {
             IndexGUID:xsId,
             KHGUID:this.khid,
             LXRGUID:this.lxrid,
+            WarningType:this.condition.warnType,
             isWeiwinHistoryList:true
           })
           .then((res)=>{
@@ -285,7 +289,8 @@ export default {
           status:"",
           types:"",
           products:"",
-          areas:""
+          areas:"",
+          warnType:""
       }
     }
   },

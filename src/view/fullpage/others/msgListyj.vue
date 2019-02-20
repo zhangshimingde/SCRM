@@ -1,29 +1,40 @@
 <template>
       <div id="msg-list">
-        <template v-if="!loading">
-          <group>
-            <template v-if="indexList.length>0">
-            <cell-box v-for="(item,index) in indexList" :key="index">
-              <span @click="detail('shangjidetail',item)" class="block-link clearfix relative" v-if="item.DataType=='商机'">
-                  <div class=" icon-wrap text_center relative sj" >
-                    <div class="absolute point" v-if="item.IsRead==0"></div>
-                    <i class="iconfont icon-shangji"></i>
-                  </div>
-                  <div class=" content">
-                    <p class="title"><span class="inline_block text-over" style="width:50%">{{item.Title}}</span><span class="right date">{{item.CreateTime.replace("T"," ").substring(0,19)}}</span></p>
-                    <p class="msg">【{{item.OpportunitiesName}}】{{item.AbnormalReminderName}}</p>
-                  </div>
-              </span>
-            </cell-box>
-            </template>
-            <template v-else>
-              <div class="text_center" style="padding:20px 0;color:#ccc">暂无数据...</div>
-            </template>
-          </group>
-        </template>
-        <div v-else style="padding:40px 0;" class="text_center">
-          <inline-loading></inline-loading>
-          <span style="color:#9d9d9d">数据加载中</span>
+
+        <div class="content scroll-content-wrap" id="scroll-wrap">
+          <template v-if="!loading2">
+            <div id="scroll-box">
+                <group>
+                  <template v-if="indexList.length>0">
+                    <cell-box v-for="(item,index) in indexList" :key="index">
+                      <span @click="detail('shangjidetail',item)" class="block-link clearfix relative" v-if="item.DataType=='商机'">
+                          <div class=" icon-wrap text_center relative sj" >
+                            <div class="absolute point" v-if="item.IsRead==0"></div>
+                            <i class="iconfont icon-shangji"></i>
+                          </div>
+                          <div class=" content">
+                            <p class="title"><span class="inline_block text-over" style="width:50%">{{item.Title}}</span><span class="right date">{{item.CreateTime.replace("T"," ").substring(0,19)}}</span></p>
+                            <p class="msg">【{{item.OpportunitiesName}}】{{item.AbnormalReminderName}}</p>
+                          </div>
+                      </span>
+                    </cell-box>
+                  </template>
+                  <template v-else>
+                    <div class="text_center" style="padding:20px 0;color:#ccc">暂无数据...</div>
+                  </template>
+                </group>
+                <p class="text_center" v-if="loading" style="padding:9px 0">
+                  <inline-loading></inline-loading>
+                  <span style="color:#9d9d9d">数据加载中</span>
+                </p>
+            </div>
+          </template>
+          <template v-else>
+            <p class="text_center" style="padding:40px 0">
+              <inline-loading></inline-loading>
+              <span style="color:#9d9d9d">数据加载中</span>
+            </p>
+          </template>
         </div>
       </div>
 </template>
@@ -40,26 +51,57 @@ export default {
   },
   beforeDestroy () {
   },
-  created(){
-
-    this.getData()
+  mounted(){
+    var inner=document.getElementById('scroll-box');
+    var outer=document.getElementById('scroll-wrap');
+    var _this=this;
+    if(outer){
+      outer.onscroll=function(){
+          //  if(_this.loading) return;
+          //  console.log(this.scrollTop +outer.offsetHeight,document.getElementById('scroll-box').clientHeight)
+           if(this.scrollTop +outer.offsetHeight+10>=document.getElementById('scroll-box').clientHeight){
+             _this.loadMore();
+           }
+      }
+    }
+    this.getData(true)
   },
   data () {
     return {
       loading:false,
+      loading2:false,
+      page:0,
+      pageSize:25,
       indexList:[]
     }
   },
   methods:{
-    getData(type){
+    loadMore() {
+
+      this.page++;
+      if(this.page>this.totalPage-1&&this.totalPage!=0) return;
+      this.getData(false);
+    },
+    getData(reset){
         this.loading=true;
+        if(reset){
+          this.page=0;
+          this.loading2=true;
+        }
         var url='/api/EnergizaSalesOpportunities/GetOppSaleAbnormalList';
 
-        this.$http.get(url)
+        this.$http.post(url,{
+            pageSize:this.pageSize,
+            pageIndex:this.page
+        })
         .then((res)=>{
           this.loading=false;
-            console.log(res);
-            this.indexList=res.Data;
+          this.loading2=false;
+          this.totalPage=Math.ceil(res.Total/this.pageSize);
+          // return;
+          res.Data.map(el=>{
+            this.indexList.push(el)
+          });
         })
     },
     detail(type,item){
@@ -76,6 +118,12 @@ export default {
 
 <style lang="less">
 @import '../../../assets/less/exports.less';
+.scroll-content-wrap{
+    height: 100vh;
+    background-color: white;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
 #msg-list{
   .weui-cells{
     margin-top: 0;

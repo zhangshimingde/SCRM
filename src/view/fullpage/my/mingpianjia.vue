@@ -38,7 +38,7 @@
             </p>
           </template>
         </div>
-        
+
         <div v-transfer-dom>
           <popup  v-model="showCondition" :popup-style="{background:'white'}" position="right" width="80%">
             <condition @finish="conditionFinish" :lxrName="lxrName"></condition>
@@ -75,7 +75,7 @@ export default {
            _this.loadMore();
          }
     }
-    
+
 
     if(this.$route.params.type=='shangji'){
       this.sjid=this.$route.params.id;
@@ -141,7 +141,7 @@ export default {
         Bussiness:this.condition.Bussiness,
         BusinessDecisioner:this.condition.BusinessDecisioner,
         PageIndex:this.page,
-        PageSize:50,
+        PageSize:15,
         KHGUID:this.khid,
         OPPGUID:this.sjid,
         IsMyCard:1
@@ -157,11 +157,11 @@ export default {
           this.datas=[];
           document.getElementById('scroll-wrap').scrollTop=0;
         }
-        
+
         res.Data.ListData.map((el)=>{
            this.datas.push(el);
         })
-       
+
       })
     },
     conditionFinish(params){ //筛选条件选择完毕
@@ -194,7 +194,7 @@ export default {
           isTou:0,
       }
     },
-   
+
   },
   watch:{
     key(val){ //搜索关键词置空
@@ -241,7 +241,7 @@ export default {
 
         }
       }
-      
+
     }
   }
   .content{
@@ -267,7 +267,7 @@ export default {
       background-color: rgb(9, 146, 255);
       border-top:1px solid #dcdbdb;
   }
-  
+
 }
 .pop-title{
   padding: 10px 15px;

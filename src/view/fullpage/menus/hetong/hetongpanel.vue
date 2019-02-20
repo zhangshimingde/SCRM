@@ -125,9 +125,9 @@ export default {
       .then((res)=>{
         this.loading=false;
         if(!res.Data[0]) return;
-        this.panelDataList[0].val=res.Data[0].YearQyAmount/10000;
+        this.panelDataList[0].val=res.Data[0].YearQyAmount;
         this.panelDataList[1].val=res.Data[0].YearContractNum;
-        this.panelDataList[2].val=res.Data[0].LjQyAmount/10000;
+        this.panelDataList[2].val=res.Data[0].LjQyAmount;
         this.panelDataList[3].val=res.Data[0].LjContractNum;
       })
     },

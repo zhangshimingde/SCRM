@@ -178,6 +178,7 @@ export default {
   left: 0;
   top:0;
   color: #666;
+  z-index: 4;
   .contents{
     flex-grow:1;
     background-color: white;

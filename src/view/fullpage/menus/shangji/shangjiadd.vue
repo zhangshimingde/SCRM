@@ -74,11 +74,29 @@
             <span class="right content">{{ways.name}} <icon type="warn" v-if="sjgetways"></icon></span>
           </div>
         </cell-box>
-        <cell-box v-show="!IsManager">
+        <!-- <cell-box v-show="!IsManager">
           <div class="form-item clearfix sh" style="padding-right:0" >
             <x-switch title="发起确认审核" v-model="isShenhe"></x-switch>
           </div>
+        </cell-box> -->
+
+        <!--商机挂起 -->
+        <cell-box>
+          <div class="form-item clearfix sh" style="padding-right:0" >
+            <x-switch title="是否挂起" v-model="isHangUp"></x-switch>
+          </div>
         </cell-box>
+        <cell-box  v-show="isHangUp">
+          <div class="form-item clearfix restartDate" style="padding-right:0" >
+            <calendar title="预计重启日期" class="datecalendar" disable-past :start-date="startDate" placeholder="必填" v-model="reStartDate"></calendar>
+          </div>
+        </cell-box>
+        <cell-box  v-show="isHangUp">
+          <div class="form-item clearfix reado resartReason" style="" >
+            <x-textarea title="挂起原因" v-model="hangUpReason" placeholder="必填"  text-align="right"></x-textarea>
+          </div>
+        </cell-box>
+<!-- // end -->
         <cell-box v-show="isShenhe">
           <div class="form-item clearfix" style="padding-right:0">
             <p>上级确认人 <span style="font-size:0.9rem;color:#b2b2b2">(点击头像切换)</span></p>
@@ -155,20 +173,22 @@
 </template>
 
 <script>
-import {XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading,Icon  } from 'vux'
+import {XInput,Calendar ,XSwitch ,XTextarea ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading,Icon  } from 'vux'
 import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../components/common/checkpeoplemultiple';
 import sjtype from './compo/sjtype'
 import products from './compo/products'
 import ways from './compo/ways'
 import kehulist from './kehulist'
+import moment from 'moment'
 export default {
   name: '',
   components:{
-   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio,Icon
+   XInput ,Group,Popup,kehulist ,XSwitch,XTextarea  ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio,Icon
   },
   created(){
     if(this.$route.params.type=="lianxiren"){
+      this.DataSource="移动端联系人新增";
       // 获取此联系人绑定的客户信息
       this.$http.post("/api/AjaxLXRinfoController/GetKHInfoByLxrGUID?LxrGUID="+this.$route.params.id)
       .then((res)=>{
@@ -187,7 +207,9 @@ export default {
           }
       })
       this.lxrId=this.$route.params.id;
+
     }else if(this.$route.params.type=="kehu"){
+      this.DataSource="移动端客户新增"
       this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetail",{
         KHGUID:this.$route.params.id
       })
@@ -200,7 +222,6 @@ export default {
       })
 
     }
-
     this.getdefaultzzr();
     this.getInfoData();
   },
@@ -219,8 +240,10 @@ export default {
   },
   data () {
     return {
+      startDate:moment().add(1, 'days').format("YYYY-MM-DD"),
       disabled:false,
       lxrId:"",
+      DataSource:"移动端手工新增",
       chosekehu:false,
       chosepeople:false,
       checkpeoplemultiple:false,
@@ -288,7 +311,11 @@ export default {
       nameTip:"",
       nameIcon:"",
       moneyTip:"",
-      moneyIcon:""
+      moneyIcon:"",
+
+      isHangUp:false,
+      reStartDate:"",
+      hangUpReason:""
     }
   },
   methods:{
@@ -582,6 +609,14 @@ export default {
             })
             return ;
           }
+
+          if(this.isHangUp&&!(this.reStartDate&&this.hangUpReason)){
+            this.$vux.alert.show({
+              title: '友情提示',
+              content: '必填项请填写完整！'
+            })
+            return ;
+          }
           var rebuy;
            //首签、续签
           switch(this.qy){
@@ -621,7 +656,13 @@ export default {
               FollowType:1,
               ProductCode:pdid.join(','),
               UserGUID:teamid.join(','),
-              LxrGUID:this.lxrId
+              LxrGUID:this.lxrId,
+              DataSourceDetails:this.DataSource, //用于系统排查，不做展示
+              DataSource:"手工新增",
+
+              IsHangUp:this.isHangUp,
+              HangUpReason:this.hangUpReason,
+              PredictReStartTime:this.reStartDate
             })
             .then((res)=>{
                 // console.log(res)
@@ -665,6 +706,11 @@ export default {
 
 <style lang="less">
 #shangjiadd{
+  .restartDate,.resartReason{
+    .weui-cell{
+        padding: 0 !important;
+    }
+  }
   background-color: #F6F6F6;
   .form-item{
     width: 100%;

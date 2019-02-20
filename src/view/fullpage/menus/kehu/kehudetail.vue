@@ -1,10 +1,10 @@
 <template>
     <div id="khdetail">
-      <div class="relative">
-<!--           <img src="static/img/pic_l.png" alt="" style="height:50%;left:0;bottom:0;z-index:2" class="absolute">
-          <img src="static/img/pic_r.png" alt="" style="height:50%;right:0;bottom:0;z-index:2" class="absolute"> -->
-          <swiper  height="140px" dots-position="center" dots-class="dot" class="sw" style="padding:15px 0;">
-            <swiper-item class="black">
+      <div class="relative"  style="background:white">
+          <img src="static/img/pic_l.png" alt="" style="height:50%;left:0;bottom:0;z-index:1" class="absolute">
+          <img src="static/img/pic_r.png" alt="" style="height:50%;right:0;bottom:0;z-index:1" class="absolute">
+          <swiper :options="swiperOption" ref="mySwiper"  class="swipe-plungin sw">
+            <swiper-slide class="black swipe-item">
               <div class="base-info-wrap text_center">
 
 
@@ -36,13 +36,13 @@
                 </div>
 
               </div>
-            </swiper-item>
-            <swiper-item class="black" style="padding:0 15px">
+            </swiper-slide>
+            <swiper-slide class="black swipe-item">
               <div class="people-info-wrap">
                 <div class="people-line clearfix">
                   <span class="left banner">主责人</span>
                   <ul class="right people-list">
-                    <li  @click="changeZZR()">
+                    <li  @click="changeZZR">
                       <div class="people-pic cm-bac" v-if="swiperInfo2.zzr.avater" style="background-size:cover;background-position:center" :style="{backgroundImage:'url('+swiperInfo2.zzr.avater+')'}"></div>
                       <div class="people-pic cm-bac" v-else style="background-image:url(static/img/avater.png);background-size:80%;background-repeat:no-repeat;background-position:center" ></div>
                       <p class="people-name">{{swiperInfo2.zzr.name}}</p>
@@ -54,7 +54,7 @@
                   <span class="left banner">经营团队</span>
                   <ul class="right people-list">
 
-                    <li v-if="hasRight"  @click="checkpeoplemultiple=true">
+                    <li v-if="hasRight"  @click="choseTeamer">
                       <div class="people-pic cm-bac" style="background-position:center;background-image:url(static/img/add.png);background-size:50%;background-repeat:no-repeat;border:1px solid #eaeaea"></div>
                     </li>
                     <li v-for="(item,index) in swiperInfo2.team" @click="removePeople(item,index)" :key="index">
@@ -65,7 +65,8 @@
                   </ul>
                 </div>
               </div>
-            </swiper-item>
+            </swiper-slide>
+            <div class="swiper-pagination"  slot="pagination"></div>
           </swiper>
       </div>
 
@@ -73,7 +74,11 @@
 
         <div class="panel-wrap"  id="tab-data">
           <scroller lock-y :scrollbar-x=false>
-          <div  class="clearfix" id="panel-wrap" :style="{'width':tabList.length*70+'px'}">
+          <div  class="clearfix" id="panel-wrap" :style="{'width':(tabList.length+1)*70+'px'}">
+            <!-- <span class="panel-link" @click="getConcat">
+              <i class="iconfont icon-yunweifuwu c-i" style="color:#3079D5"></i> <br>
+              <span class=" c-t">发起会话</span> <br>
+            </span> -->
             <template  v-if="!loading2" >
               <div v-for="(item,index) in tabList" v-if="tabList.length>0" :key="index">
                 <router-link :to="{name:'lianxiren',params:{type:'kehu',id:$route.params.id}}" class="panel-link" v-if="item.Key=='lianxiren'">
@@ -106,6 +111,8 @@
                   <span class=" c-t">运维服务</span> <br>
                   <span class=" c-d">{{item.Value}}</span>
                 </router-link>
+
+
               </div>
               <div class="text_center" v-if="tabList.length==0" style="height:54px;line-height:54px;width:100vw">
                 <span style="color:#9d9d9d">暂无数据</span>
@@ -131,7 +138,7 @@
         <div class="tab-content">
           <followrecord v-show="tabIndex==0" :ProType="2" :id="$route.params.id"></followrecord>
           <template v-if="!loading">
-            <detail v-show="tabIndex==1" :detailInfo="detailInfo"></detail>
+            <detail v-show="tabIndex==1" :canEdit="canEdit" :detailInfo="detailInfo"></detail>
             <!-- <div class="pops" v-if="pops"></div> -->
           </template>
         </div>
@@ -141,13 +148,13 @@
       <!-- 经营团队 -->
       <div v-transfer-dom >
         <popup v-model="checkpeoplemultiple" :popup-style="{background:'white'}" position="right" width="80%">
-          <checkpeoplemultiple :deleteId="deleteId" @choseFinish="choseMultiplePeopleFinish"></checkpeoplemultiple>
+          <checkpeoplemultiple :deleteId="deleteId" :beChose="beChoseM" :flag="checkpeoplemultiple" @choseFinish="choseMultiplePeopleFinish"></checkpeoplemultiple>
         </popup>
       </div>
       <!-- 单选人 -->
       <div v-transfer-dom>
         <popup v-model="chosepeople" :popup-style="{background:'white'}" position="right" width="80%">
-          <checkpeople @choseFinish="choseSinglePeopleFinish"></checkpeople>
+          <checkpeople @choseFinish="choseSinglePeopleFinish" :beChose="beChose" :flag="chosepeople"></checkpeople>
         </popup>
       </div>
 
@@ -155,15 +162,18 @@
 </template>
 
 <script>
-import { TransferDom,CellBox,Popup ,Group ,InlineLoading,Swiper,SwiperItem,Tab, TabItem,Scroller   } from 'vux'
+import { TransferDom,CellBox,Popup ,Group ,InlineLoading,Tab, TabItem,Scroller   } from 'vux'
 import detail from "./compo/kehudetailform"
 import followrecord from "../../../../components/common/followrecord"
 import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../components/common/checkpeoplemultiple';
+import { swiper, swiperSlide } from 'vue-awesome-swiper'
+import wxSDK from '@/assets/js/global.js'
+import 'swiper/dist/css/swiper.css'
 export default {
   name: '',
   components:{
-   CellBox ,Group ,InlineLoading,Popup,Swiper,SwiperItem,Tab, TabItem,checkpeoplemultiple,checkpeople,followrecord,detail,Scroller
+   CellBox ,Group ,InlineLoading,Popup,Tab,swiper, swiperSlide,  TabItem,checkpeoplemultiple,checkpeople,followrecord,detail,Scroller
   },
   created(){
     this.isHasRight();
@@ -189,8 +199,21 @@ export default {
       }
     }
   },
+  computed: {
+      swiper() {
+        return this.$refs.mySwiper.swiper
+      }
+  },
   data () {
     return {
+      swiperOption: {
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true
+        }
+      },
+      beChoseM:[],
+      beChose:[],
       hasRight:true,
       pops:false,
       SortName:"",
@@ -213,12 +236,23 @@ export default {
           id:"",
           avater:""
         },
-        team:[]
+        team:[],
+        canEdit:true
       },
 
     }
   },
   methods:{
+    getConcat(){
+      wxSDK.getConcat('客户',this.swiperInfo1.name);
+    },
+    choseTeamer(){
+      this.checkpeoplemultiple=true;
+      this.beChoseM=this.swiperInfo2.team.map(el=>{
+        return el.id;
+      });
+      // console.log(this.beChoseM)
+    },
     isHasRight(){
 
       this.$http.post("/api/EnergizaSaleKHInfoController/IsAssignJobs?KHGUID="+this.$route.params.id)
@@ -229,10 +263,12 @@ export default {
     changeZZR(){
       if(!this.hasRight)return;
       this.chosepeople=true;
+      this.beChose=[this.swiperInfo2.zzr.id];
     },
     getInit(){  //获取商机信息
       this.loading=true;
-      this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetail",{
+      // this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetail",{
+      this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetailPC",{
         KHGUID:this.$route.params.id
       })
       .then((res)=>{
@@ -241,6 +277,7 @@ export default {
         if(!res.Data.IsEdit){
           this.pops=true
         }
+        this.canEdit=res.Data.KhEdit;
          // 总数据信息
           this.detailInfo=res.Data;
 
@@ -302,6 +339,8 @@ export default {
               title: '友情提示',
               content: '修改主责人成功！'
             })
+
+            this.getInit();
         }else{
           this.$vux.alert.show({
               title: '友情提示',

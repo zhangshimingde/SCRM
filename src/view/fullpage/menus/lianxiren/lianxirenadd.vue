@@ -27,6 +27,11 @@
           </div>
         </cell-box>
         <cell-box>
+          <div class="form-item clearfix radio readw" style="padding-right:0">
+            <popup-radio title="性别" :options="GenderList" v-model="Gender"></popup-radio>
+          </div>
+        </cell-box>
+        <cell-box>
           <div class="form-item clearfix sp" style="" @click="business=true">
             <x-input  :title='`<span style="${businessTip}">负责业务</span>`'  novalidate :icon-type="businessIcon"  v-model="baseInfo.business" placeholder="点击选择(必填)" readonly  text-align="right"></x-input>
           </div>
@@ -272,6 +277,8 @@ export default {
         key: 8,
         value: 3
       }],
+      Gender:"1",
+      GenderList:[{value:'男',key:'1'},{value:'女',key:'0'},{value:'不详',key:''}],
       baseInfo:{
         name:"",
         company:"",
@@ -347,7 +354,7 @@ export default {
     //对输入框进行正则验证
     onBlur(){
       var _this=this;
-      var  reg=/^[1]{1}[34578]{1}[0-9]{9}$/;
+      var  reg=/^1[3456789][0-9]{9}$/;
       if(this.baseInfo.phone){
         if(reg.test(this.baseInfo.phone)){
         }else{
@@ -438,7 +445,7 @@ export default {
                 // DepartMent:"",
                 JobTitle:this.baseInfo.jobs,
                 Business:this.baseInfo.business,
-                // Gender:lic,
+                Gender:this.Gender,
                 Position:lic,
                 QQ:this.baseInfo.qq,
                 PositionStation:this.baseInfo.reason,

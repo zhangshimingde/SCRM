@@ -42,14 +42,13 @@ Vue.use(Button)
 
 
 // 设置默认的token，开发模式下使用
-localStorage.setItem("token", "default");
-axios.defaults.baseURL = 'http://cc.mingyuanyun.test:9527';  //超哥主机
-// axios.defaults.baseURL = "http://10.5.99.33:8012", //开发环境 ,陈锐
+// localStorage.setItem("token", "default");
+// // axios.defaults.baseURL = 'http://cc.mingyuanyun.test:9527';  //超哥主机
+//  axios.defaults.baseURL = "http://10.5.99.33:8012"; //开发环境 ,陈锐
 // 测试环境
 // axios.defaults.baseURL = 'http://apitest.mingyuanyun.com:8018';
 // 正式环境环境
-// axios.defaults.baseURL = 'https://api.mingyuanyun.com';
-// end
+axios.defaults.baseURL = 'https://api.mingyuanyun.com';
 
 
 Vue.prototype.$http.interceptors.request.use(
@@ -115,26 +114,32 @@ axios.interceptors.response.use(
   });
 
 // 判断身份是否登录
-if (window.location.href.match(/code=(\S*)&/g)) {
+if (window.location.href.match(/code=(\S*)&state/g)) {
   if (localStorage.getItem("token")) {
     axios.defaults.headers.common['Authorization'] = localStorage.getItem("token");
   } else {
-    var str = window.location.href.match(/code=(\S*)&/g)[0];
-    Vue.prototype.$code = str.replace("code=", "").replace("&", "");
+    var str = window.location.href.match(/code=(\S*)&state/g)[0];
+    Vue.prototype.$code = str.replace("code=", "").replace("&state", "");
     Vue.prototype.$cmJs.getToken(Vue.prototype, function () {
       axios.defaults.headers.common['Authorization'] = localStorage.getItem("token");
       // window.location.reload(true);
     });
   }
 } else {
+<<<<<<< Updated upstream
 
+  // 外部系统调用的页面排除掉，不走身份验证，给默认的token
+  if(window.location.href.indexOf('outSystem')>-1){
+    localStorage.setItem("token", "default");
+  }
+  // end
+
+=======
+>>>>>>> Stashed changes
   if (localStorage.getItem("token")) {
-    // alert(localStorage.getItem("token"))
     axios.defaults.headers.common['Authorization'] = localStorage.getItem("token");
   } else {
-    // console.log(Vue.prototype.$url);
     window.location.href = Vue.prototype.$url;
-
   }
 
 }

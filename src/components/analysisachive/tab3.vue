@@ -1,21 +1,25 @@
 <template>
       <group id="tab3">
 
-        <template  v-if="!loading">
-          <div class="clearfix analy-header"  style="padding:5px 0">
+
+          <div class="clearfix analy-header" v-show="!loading"  style="padding:5px 0 0">
             <div class="left analy-link-wrap">
 
               <span @click="changeType('线索')" :class="activeType=='线索'?'active':''">线索</span>
               <span @click="changeType('商机')" :class="activeType=='商机'?'active':''">商机</span>
               <span @click="changeType('签约')" v-show="showQy" :class="activeType=='签约'?'active':''">签约</span>
             </div>
-
-            <!-- <p class="right text_right" style="font-size:0.9rem;line-height:40px;padding-right:1rem;color:#999"><span class="left">套数 (单位：个)</span></p> -->
-            <span class="clearfix fx-sale-title" id="chose-ar">
-                <popup-picker :data="typeList" v-if="activeType!='签约'" :display-format="format" :columns="2"  v-model="type" ref="picker3" class="right" @on-change="choseArea" show-name></popup-picker>
-                <popup-picker :data="typeListQY" v-else  :columns="1"  v-model="typeQY" ref="picker4" class="right" @on-change="choseArea" show-name></popup-picker>
-            </span>
           </div>
+
+          <div class="clearfix relative" v-show="!loading" style="top:-0.5rem">
+                <datepicker @changeDates="changeDates" style="left:0;right:unset" class="absolute cm-date-picker"/>
+                <!-- <p class="right text_right" style="font-size:0.9rem;line-height:40px;padding-right:1rem;color:#999"><span class="left">套数 (单位：个)</span></p> -->
+                <span class="clearfix fx-sale-title right" id="chose-ar">
+                    <popup-picker :data="typeList" v-if="activeType!='签约'" :display-format="format" :columns="2"  v-model="type" ref="picker3" class="right" @on-change="choseArea" show-name></popup-picker>
+                    <popup-picker :data="typeListQY" v-else  :columns="1"  v-model="typeQY" ref="picker4" class="right" @on-change="choseArea" show-name></popup-picker>
+                </span>
+            </div>
+        <template  v-if="!loading">
           <div class="charts-wrap">
             <!-- <span class="clearfix fx-sale-title" id="chose-ar">
                 <popup-picker :data="typeList" :columns="2" v-model="type" ref="picker3" class="left" @on-change="choseArea" show-name></popup-picker>
@@ -23,7 +27,7 @@
             <p class="left text_right" style="font-size:0.9rem;padding-left:10px;color:#999"><span class="left">套数 (单位：个)</span></p>
             <div class="relative">
               <p class="absolute totals text_center">
-                {{activeType}} <br> <span style="font-size:1.2rem">{{totalSum}}</span>
+                {{activeType}} <br> <span style="font-size:1.2rem">{{totalSum?totalSum:0}}</span>
               </p>
               <charts id="tab2-charts" styles="width:100%;height:18rem;margin:0 auto;padding-bottom:20px" :option="echartsOptions"></charts>
             </div>
@@ -60,6 +64,8 @@
 <script>
 import { Selector ,Group,TabItem,XTable,PopupRadio,InlineLoading,PopupPicker   } from 'vux'
 import charts from "../charts/charts"
+import datepicker from '@/components/common/datepicker'
+import datepickerCmData from '@/mixins/datepicker'
 export default {
   name: '',
   created(){
@@ -69,8 +75,9 @@ export default {
     this.getArea();
 
   },
+  mixins:[datepickerCmData],
   components:{
-    Selector ,Group,charts,TabItem,XTable ,PopupRadio,InlineLoading,PopupPicker
+    Selector ,Group,charts,TabItem,XTable ,PopupRadio,InlineLoading,PopupPicker,datepicker
   },
   computed:{
     echartsOptions(){
@@ -139,13 +146,14 @@ export default {
 
     },
     getData(){
-
       this.loading=true;
       var url;
       if(this.activeType=="签约"){
         url="/api/EnergizeSaleBulletin/GetProductStractureSingAnalyse";
         this.$http.post(url,{
             CompanyGUID:this.typeQY[0],
+            sdate:this.dateRange[0],
+            edate:this.dateRange[1]
         })
         .then((res)=>{
           this.setData(res);
@@ -156,6 +164,8 @@ export default {
         this.$http.post(url,{
             CompanyGUID:this.type[0],
             DepartmentGUID:this.type[1],
+            sdate:this.dateRange[0],
+            edate:this.dateRange[1]
         })
         .then((res)=>{
           this.setData(res);
@@ -171,7 +181,7 @@ export default {
         this.loading=false;
         this.sortByKey(res.Data,"Num")
         var temp=[];
-        this.totalSum=res.OpportunityNum;
+        this.totalSum=res.OpportunityNum||res.OpportunitiesNum||res.qyNum;
         res.Data.map((el)=>{
           this.total+=el.Num;
         })
@@ -236,14 +246,46 @@ export default {
     },
     fillArea(res){
       this.typeList=[];
+        // var temp=[];
+        // if(res.UserTopRole==0){
+        //     res.Data.unshift({
+        //       name:'全部区域',
+        //       value:"allArea",
+        //       parent:""
+        //     });
+
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+        //       }
+        //     })
+        // }else if(res.UserTopRole==1){
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+
+        //         this.type=[el.value,"allDepartment"]
+        //       }
+        //     })
+        // }else if(res.UserTopRole==2){
+        //     res.Data.map((el)=>{
+        //         this.type=[res.Data[0].value,res.Data[1].value]
+        //     })
+        // }
+
+        // this.typeList=temp.concat(res.Data);
         var temp=[];
-        if(res.UserTopRole==0){
-            res.Data.unshift({
-              name:'全部区域',
-              value:"allArea",
-              parent:""
-            });
+        if(res.UserTopRole==0){ //总部负责人
 
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -251,9 +293,26 @@ export default {
                   value:"allDepartment",
                   parent:el.value
                 })
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==1){
+
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+        }else if(res.UserTopRole==1){ //区域负责人，有可能有多个区域权限
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -262,13 +321,42 @@ export default {
                   parent:el.value
                 })
 
-                this.type=[el.value,"allDepartment"]
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==2){
+
+
+            // 当有多个区域权限时
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+
+
+        }else if(res.UserTopRole==2){ //部门负责人，有可能有多个部门权限
             res.Data.map((el)=>{
                 this.type=[res.Data[0].value,res.Data[1].value]
             })
+
+            // 当有多个部门权限时
+            if(res.Data.length>2){
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:res.Data[0].value
+              })
+              this.type=[res.Data[0].value,"allDepartment"];
+            }
         }
 
         this.typeList=temp.concat(res.Data);

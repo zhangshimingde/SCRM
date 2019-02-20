@@ -2,8 +2,8 @@
       <div id="panel-list">
         <group>
           <template v-if="!loading" >
-            <div  v-if="listData.length>0">
-              <cell is-link  v-for="(item,index) in listData" :link="'/panelWrap/'+item.Type" :key="index" >
+            <div  v-if="panelList.length>0">
+              <cell is-link  v-for="(item,index) in panelList" :link="'/panelWrap/'+item.Type" :key="index" >
                 <p slot="title"><span >{{item.Name}}</span></p>
                 <img slot="icon" width="18" style="display:block;margin-right:15px;" :src="'static/img/'+item.ICO+'.png'">
               </cell>
@@ -22,28 +22,41 @@
 
 <script>
 import { Cell,Group,Badge,InlineLoading  } from 'vux'
+import { mapState } from "vuex";
 export default {
   name: 'overview',
   components:{
     Cell,Group,Badge,InlineLoading
   },
   created(){
-    this.getData();
+    // this.getData();
+    if(this.panelList===null){this.loading=true}
   },
   data () {
     return {
       loading:false,
-      listData:[],
     }
   },
+  computed:{
+      ...mapState(["panelList"]),
+  },
   methods:{
-    getData(){
-      this.loading=true;
-      this.$http.post("/api/EnergizeSaleMenu/GetReportMenu")
-      .then((res)=>{
-        this.loading=false;
-        this.listData=res.Data
-      })
+
+    // getData(){
+      // console.log(this.rootList)
+      // this.loading=true;
+      // this.$http.post("/api/EnergizeSaleMenu/GetReportMenu")
+      // .then((res)=>{
+      //   this.loading=false;
+      //   this.listData=res.Data;
+      //   console.log(this.listData)
+      // })
+    // },
+  },
+  watch:{
+    panelList(val){
+      // console.log(val)
+      if(val!==null){this.loading=false;}
     }
   }
 }

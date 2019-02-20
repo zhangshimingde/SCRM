@@ -9,60 +9,95 @@
       </group>
       <group style="margin:0px 0 10px;">
         <cell-box >
-          <div class="form-item clearfix readw" style="padding-right:0">
-              <x-input title="客户简称"  v-model="khName" @on-change="updateField('SortName,'+khName)" placeholder="必填" :show-clear="false" text-align="right" ></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" style="padding-right:0">
+              <x-input title="客户简称" :readonly="!canEdit"  v-model="khName" @on-change="updateField('SortName,'+khName)" placeholder="必填" :show-clear="false" text-align="right" ></x-input>
           </div>
         </cell-box>
-        <cell-box is-link >
-          <div class="form-item clearfix readw" @click="openSelect('khLevel')">
+
+        <cell-box >
+          <div class="form-item clearfix reado" style="padding-right:0">
+              <x-input title="所属部门" readonly  v-model="DepartmentName" placeholder="--" text-align="right" ></x-input>
+          </div>
+        </cell-box>
+
+        <cell-box >
+          <div class="form-item clearfix reado" style="padding-right:0">
+              <x-input title="最近跟进时间" readonly  v-model="LastFollowTime" placeholder="--" text-align="right" ></x-input>
+          </div>
+        </cell-box>
+
+        <cell-box >
+          <div class="form-item clearfix reado" style="padding-right:0">
+              <x-input title="是否有工商信息" readonly  v-model="IsAIC" placeholder="--" text-align="right" ></x-input>
+          </div>
+        </cell-box>
+        <cell-box >
+          <div class="form-item clearfix reado" style="padding-right:0">
+              <x-input title="企业状态" readonly  v-model="Status" placeholder="--" text-align="right" ></x-input>
+          </div>
+        </cell-box>
+
+        <cell-box >
+          <div class="form-item clearfix" :class="rankEdit?'readw':'reado'" style="padding-right:0">
+              <x-input title="房企排名" :readonly="!rankEdit"  v-model="KH_RealEstateRanking" @on-change="updateField('KH_RealEstateRanking,'+KH_RealEstateRanking)" placeholder="选填" :show-clear="false" text-align="right" ></x-input>
+          </div>
+        </cell-box>
+
+        <cell-box :is-link="canEdit" >
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('khLevel')">
             <span class="left banner">公司层级</span>
             <span class="right content">
                 {{khLevel.name}}
             </span>
           </div>
         </cell-box>
-        <cell-box is-link >
-          <div class="form-item clearfix readw" @click="openSelect('kehuType')">
-            <span class="left banner">客户分类</span>
-            <span class="right content">
-                {{kehuType.name}}
-            </span>
-          </div>
-        </cell-box>
-        <cell-box is-link v-if="kehuType.name=='存量地产'">
-          <div class="form-item clearfix readw" @click="openSelect('kehuStatus')">
-            <span class="left banner">客户存量业态</span>
-            <span class="right content">
-                {{kehuStatus.name}}
-            </span>
-          </div>
-        </cell-box>
-        <cell-box is-link v-if="khLevel.name!='集团公司'">
-          <div class="form-item clearfix readw" @click="chosekehu=true" >
+        <cell-box :is-link="canEdit" v-if="khLevel.name!='集团公司'">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="chosekehu=true" >
             <span class="left banner">上级公司</span>
             <span class="right content">
                 {{parentKehu.name}}
             </span>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('area')">
+        <cell-box :is-link="canEdit" >
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('kehuType')">
+            <span class="left banner">客户分类</span>
+            <span class="right content">
+                <span v-for="(item,index) in kehuType" :key="index">
+                  {{item.name}}
+                </span>
+            </span>
+          </div>
+        </cell-box>
+        <cell-box :is-link="canEdit" v-if="showKehuStatus">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('kehuStatus')">
+            <span class="left banner">客户存量业态</span>
+            <span class="right content">
+                <span v-for="(item,index) in kehuStatus" :key="index">
+                  {{item.name}}
+                </span>
+            </span>
+          </div>
+        </cell-box>
+
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('area')">
             <span class="left banner">所属区域</span>
             <span class="right content">
                 {{area.name}}
             </span>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('levelOne')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('levelOne')">
             <span class="left banner">一级细分</span>
             <span class="right content">
                 {{levelOne.name}}
             </span>
           </div>
         </cell-box>
-        <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('levelTwo')">
+        <cell-box :is-link="canEdit">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('levelTwo')">
             <span class="left banner">二级细分</span>
             <span class="right content">
                 {{levelTwo.name}}
@@ -71,12 +106,12 @@
         </cell-box>
         <cell-box>
           <div class="form-item clearfix sh" style="padding-right:0">
-               <x-switch title="是否为头部客户" v-model="isTou"></x-switch>
+               <x-switch title="是否为头部客户" :disabled="!canEdit" v-model="isTou"></x-switch>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix qy readw" style="padding-right:0">
-            <popup-radio title="是否为存在合作" :options="operations" v-model="op" placeholder="必填"></popup-radio>
+          <div class="form-item clearfix qy reado" style="padding-right:0">
+            <popup-radio title="是否为存在合作" readonly :options="operations" v-model="op" placeholder="--"></popup-radio>
           </div>
         </cell-box>
       </group>
@@ -133,7 +168,7 @@
       </group>
       <group style="margin:0px 0 10px">
         <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('province')">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('province')">
             <span class="left banner">省份</span>
             <span class="right content">
                 {{province.name}}
@@ -141,7 +176,7 @@
           </div>
         </cell-box>
         <cell-box is-link>
-          <div class="form-item clearfix readw" @click="openSelect('city')">
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('city')">
             <span class="left banner">城市</span>
             <span class="right content">
                 {{city.name}}
@@ -149,33 +184,33 @@
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix readw">
-              <x-input title="总机" @on-change="updateField('Phone,'+zj)" v-model="zj" placeholder="选填" :show-clear="false" text-align="right"></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
+              <x-input title="总机" :readonly="!canEdit" @on-change="updateField('Phone,'+zj)" v-model="zj" placeholder="选填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix readw">
-              <x-input title="传真" @on-change="updateField('Fax,'+cz)" v-model="cz" placeholder="选填" :show-clear="false" text-align="right"></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
+              <x-input title="传真" :readonly="!canEdit" @on-change="updateField('Fax,'+cz)" v-model="cz" placeholder="选填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix readw">
-              <x-input title="邮编" @on-change="updateField('ZipCode,'+yb)" v-model="yb" placeholder="选填" :show-clear="false" text-align="right"></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
+              <x-input title="邮编" :readonly="!canEdit" @on-change="updateField('ZipCode,'+yb)" v-model="yb" placeholder="选填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix readw">
-              <x-input title="地址" @on-change="updateField('Address,'+address)" v-model="address" placeholder="选填" :show-clear="false" text-align="right"></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
+              <x-input title="地址" :readonly="!canEdit" @on-change="updateField('Address,'+address)" v-model="address" placeholder="选填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix readw">
-              <x-input title="网址" @on-change="updateField('WebSite,'+wz)" v-model="wz" placeholder="选填" :show-clear="false" text-align="right"></x-input>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
+              <x-input title="网址" :readonly="!canEdit" @on-change="updateField('WebSite,'+wz)" v-model="wz" placeholder="选填" :show-clear="false" text-align="right"></x-input>
           </div>
         </cell-box>
         <cell-box>
-          <div class="form-item clearfix sh readw">
-              <x-textarea title="备注" @on-change="updateField('Remark,'+remark)" v-model="remark" placeholder="选填备注"></x-textarea>
+          <div class="form-item clearfix sh" :class="canEdit?'readw':'reado'">
+              <x-textarea title="备注" :readonly="!canEdit" @on-change="updateField('Remark,'+remark)" v-model="remark" placeholder="选填备注"></x-textarea>
           </div>
         </cell-box>
       </group>
@@ -206,13 +241,13 @@
 
       <div v-transfer-dom>
         <popup v-model="cmParamChose" :popup-style="{background:'white'}" position="right" width="80%">
-          <danxs :prama="cmParamList"  @choseFinish="cmChoseFinish"></danxs>
+          <danxs :prama="cmParamList" :count="multiple" :beChose="beChose"   @choseFinish="cmChoseFinish"></danxs>
         </popup>
       </div>
 
 
       <!-- 选择客户 -->
-      <kehulist v-if="chosekehu" @choseFinish="choseKehuFinish"></kehulist>
+      <kehulist v-if="chosekehu" :id="$route.params.id" @choseFinish="choseKehuFinish"></kehulist>
     </form>
 </template>
 
@@ -255,21 +290,24 @@ export default {
       }
     }
   },
-  props:["detailInfo"],
+  props:["detailInfo","canEdit"],
   data () {
     return {
-      kehuType:{
+      rankEdit:false,
+      KH_RealEstateRanking:null,
+      beChose:[],
+      kehuType:[{
         name:"必填",
         id:""
-      },
-      kehuStatus:{
+      }],
+      kehuStatus:[{
         name:"必填",
         id:""
-      },
+      }],
       showKehuStatus:false,
       kehuTypeList:[],
       kehuStatusList:[],
-
+      multiple:"",
       isFirstTime:true,
       cmParamList:[],
       cmParamType:"",
@@ -333,7 +371,13 @@ export default {
       partFour:{
         createPeople:"",
         createTime:""
-      }
+      },
+
+
+      DepartmentName:"",
+      Status:"",
+      IsAIC:"",
+      LastFollowTime:""
 
     }
   },
@@ -341,24 +385,42 @@ export default {
     setData(){
 
       var data=this.detailInfo.entity;
+      this.rankEdit=this.detailInfo.RankingEdit;
+      this.KH_RealEstateRanking=data.KH_RealEstateRanking;
       // console.log(data);
       this.khName=data.SortName;
       this.khLevel={
         name:data.LevelCodeName,
-        id:""
+        id:data.KHCompanyLevelCode
       };
       this.parentKehu={
         name:data.ParentKhName,
         id:data.ParentKHGUID
       };
-      this.kehuType={
-        name:data.CustomerType,
-        id:data.CustomerType
-      };
-      this.kehuStatus={
-        name:data.CustomerFormats,
-        id:data.CustomerFormats
-      };
+
+      this.kehuType=data.CustomerType.split(',').map(el=>{
+        return {
+                  name:el,
+                  id:el
+                }
+      });
+      this.kehuStatus=data.CustomerFormats.split(',').map(el=>{
+        return {
+                  name:el,
+                  id:el
+                }
+      });
+
+      let tempkehuType=this.kehuType.map(el=>el.id);
+      tempkehuType.indexOf("存量地产")>-1?this.showKehuStatus=true:this.showKehuStatus=false;
+      // this.kehuType=[{
+      //   name:data.CustomerType,
+      //   id:data.CustomerType
+      // }];
+      // this.kehuStatus=[{
+      //   name:data.CustomerFormats,
+      //   id:data.CustomerFormats
+      // }];
 
       this.area={
         name:data.BuName,
@@ -366,11 +428,11 @@ export default {
       };
       this.levelOne={
         name:data.ZbSortItemName,
-        id:""
+        id:data.ZbSortItemGUID
       };
       this.levelTwo={
         name:data.QySortItemName,
-        id:""
+        id:data.QySortItemGUID
       };
 
       if(data.IsTopCustomer=="1"){
@@ -382,6 +444,7 @@ export default {
       this.op=data.IsBuy;
 
       this.city.name=data.CityName;
+      this.city.id=data.City;
       this.province.name=data.ProvinceName;
       this.province.id=data.Province;
 
@@ -395,6 +458,12 @@ export default {
 
       this.partFour.createPeople=data.CreateName;
       this.partFour.createTime=data.CreateDate?data.CreateDate.substring(0,10):data.CreateDate;
+
+
+      this.DepartmentName=data.DepartmentName;
+      this.Status=data.Status;
+      this.IsAIC=data.IsAIC?'是':'否';
+      this.LastFollowTime=data.LastFollowTime?data.LastFollowTime.substring(0,10):data.LastFollowTime;
 
 
 
@@ -470,8 +539,16 @@ export default {
         .then((res)=>{
           // console.log(res);
           // return;
-          this.kehuTypeList=[{name:"开发商",id:"开发商"},{name:"供应商",id:"供应商"},{name:"存量地产",id:"存量地产"}];
-          this.kehuStatusList=[{name:"公寓",id:"公寓"},{name:"商业地产",id:"商业地产"},{name:"物业",id:"物业"}];
+        //   this.kehuTypeList=[{name:"开发商",id:"开发商"},{name:"供应商",id:"供应商"},{name:"内部客户",id:"内部客户"},{name:"存量地产",id:"存量地产"}];
+        //   this.kehuStatusList=[{name:"公寓",id:"公寓"},{name:"商业地产",id:"商业地产"},{name:"物业",id:"物业"},{name:"写字楼",id:"写字楼"},{name:"园区",id:"园区"}
+        // ,{name:"购物中心",id:"购物中心"},{name:"住宅社区",id:"住宅社区"},{name:"专业市场",id:"专业市场"},{name:"底商",id:"底商"},{name:"孵化器",id:"孵化器"},{name:"共享办公",id:"共享办公"}];
+
+          this.kehuTypeList=res.Data.ListCustomerType.map(el=>{
+            return {name:el.label,id:el.value}
+          });
+          this.kehuStatusList=res.Data.ListCustomerFormats.map(el=>{
+            return {name:el.label,id:el.value}
+          });
           this.loading=false;
           res.Data.CompanyLevel.map((el)=>{
             this.khLevelList.push({
@@ -509,10 +586,12 @@ export default {
         })
     },
     openSelect(type){
+      if(!this.canEdit)return;
       this.cmParamChose=true;
       this.cmParamType=type;
       // alert(type)
       // console.log(this.levelOneList);
+      this.multiple="";
       switch(type){
         case 'khLevel':this.cmParamList=this.khLevelList;break;
         case 'area':this.cmParamList=this.areaList;break;
@@ -520,27 +599,40 @@ export default {
         case 'levelTwo':this.cmParamList=this.levelTwoList;break;
         case 'province':this.cmParamList=this.provinceList;break;
         case 'city':this.cmParamList=this.cityList;break;
-        case 'kehuType':this.cmParamList=this.kehuTypeList;break;
-        case 'kehuStatus':this.cmParamList=this.kehuStatusList;break;
+        case 'kehuType':this.cmParamList=this.kehuTypeList;this.multiple="multiple";break;
+        case 'kehuStatus':this.cmParamList=this.kehuStatusList;this.multiple="multiple";break;
       }
 
-      // console.log(this.cmParamList);
+      if(type=='kehuType'||type=='kehuStatus'){
+        this.beChose=this[type];
+      }else{
+        this.beChose=[this[type]];
+      }
+
+
+      // console.log(this.beChose);
     },
     cmChoseFinish(params){
       this.cmParamChose=false;
 
       var field,val;
       switch(this.cmParamType){
-        case 'kehuType':this.kehuType={
-                        name:params.name,
-                        id:params.id
-                      };
-                      params.id=='存量地产'?this.showKehuStatus=true:this.showKehuStatus=false;
-                      field="CustomerType";val=params.id;break;
-        case 'kehuStatus':this.kehuStatus={
-                        name:params.name,
-                        id:params.id
-                      };field="CustomerFormats";val=params.id;break;
+        case 'kehuType':this.kehuType=params;
+                      let tempkehuType=params.map(el=>el.id);
+                      if(tempkehuType.indexOf("存量地产")>-1){
+                        this.showKehuStatus=true;
+                      }else{
+                        //客户分类去掉存量地产之后，清空存量客户业态
+                        this.kehuStatus=[{
+                          name:"",
+                          id:""
+                        }];
+                        this.showKehuStatus=false;
+                      }
+                      field="CustomerType";val=tempkehuType.join(',');break;
+        case 'kehuStatus':this.kehuStatus=params;
+                      let tempkehuStatus=params.map(el=>el.id);
+                      field="CustomerFormats";val=tempkehuStatus.join(',');break;
         case 'khLevel':this.khLevel={
                         name:params.name,
                         id:params.id
@@ -590,18 +682,24 @@ export default {
       }
 
       this.changeInfo(field,val);
-      if(this.cmParamType=="kehuType"&&params.name!="存量地产"){
-        this.kehuStatus={
-                        name:"",
+      let tempdata=this.kehuType.map(el=>el.id);
+      let tempsta=this.kehuStatus.map(el=>el.id);
+      if(this.cmParamType=="kehuType"&&tempdata.indexOf("存量地产")==-1){
+        this.kehuStatus=[{
+                        name:"必填",
                         id:""
-                      }
-        this.changeInfo("CustomerFormats",this.kehuStatus.id);
-      }else if(this.cmParamType=="kehuType"&&params.name=="存量地产"){
-        this.kehuStatus={
-          name:"商业地产",
-          id:"商业地产"
+                      }];
+        this.changeInfo("CustomerFormats","");
+      }else if(this.cmParamType=="kehuType"&&tempdata.indexOf("存量地产")>-1){
+        if(this.kehuStatus[0].id==""){
+            this.kehuStatus=[{
+              name:"商业地产",
+              id:"商业地产"
+            }];
         }
-        this.changeInfo("CustomerFormats",this.kehuStatus.id);
+
+        let ids=this.kehuStatus.map(el=>el.id);
+        this.changeInfo("CustomerFormats",ids.join(','));
       }
     },
     choseKehuFinish(params){ //选择上级公司完成
@@ -628,11 +726,29 @@ export default {
       }else if(field=="IsTopCustomer"&&val=="no"){
         val=0;
       }
-      this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfo",{
-        FieldName:field,
-        Value:val,
+      if(field=='KH_RealEstateRanking'){
+        if(isNaN(parseInt(val))){
+            this.$vux.alert.show({
+              title: '友情提示',
+              content: "房企排名只能是整数！"
+            })
+            return ;
+        }else{
+          val=parseInt(val);
+        }
+
+      }
+      // this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfo",{
+      //   FieldName:field,
+      //   Value:val,
+      //   KHGUID:this.detailInfo.entity.KHGUID
+      // })
+      let params=[{FieldName:field,Value:val}];
+      this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfoMult",{
+        Param:params,
         KHGUID:this.detailInfo.entity.KHGUID
-      }).then((res)=>{
+      })
+      .then((res)=>{
           if(res.Success){
             // this.$vux.toast.text('修改成功！', 'top')
               if(fn)fn();
@@ -669,33 +785,6 @@ export default {
     isTou(val){
       val?this.changeInfo("IsTopCustomer","yes"):this.changeInfo("IsTopCustomer","no");
     },
-
-
-    // khName(val,val2){
-    //   console.log(val+","+val2)
-    //   if(!val) {
-    //     var temp=val2;
-    //     this.khName=temp;
-    //   }
-    // },
-    // zj(val){
-    //   this.changeInfo("Phone",val);
-    // },
-    // cz(val){
-    //   this.changeInfo("Fax",val);
-    // },
-    // yb(val){
-    //   this.changeInfo("ZipCode",val);
-    // },
-    // address(val){
-    //   this.changeInfo("Address",val);
-    // },
-    // wz(val){
-    //   this.changeInfo("WebSite",val);
-    // },
-    // remark(val){
-    //   this.changeInfo("Remark",val);
-    // },
 
   }
 }

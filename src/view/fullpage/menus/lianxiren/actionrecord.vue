@@ -4,10 +4,10 @@
 
           <div class="xw-wrap" style="padding-bottom:0px">
             <template v-if="dataList.length>0">
-              <div class="follow-item"  v-for="(list,index) in dataList">
+              <div class="follow-item"  v-for="(list,index) in dataList" :key="index">
                 <div class="xw-year-wrap text_center">-{{list.Year}}年-</div>
                 <div style="padding-bottom:15px;background:white">
-                  <div class=" bg-white" style="padding:0 15px;" v-for="(list2,index2) in list.Children">
+                  <div class=" bg-white" style="padding:0 15px;" v-for="(list2,index2) in list.Children" :key="index2">
                     <div class="xw-month-wrap relative last" v-if="list2.last" :class="index2==0?'ot':'fi'" @click="changeFold(list2,index2,list.Children.length)">
                         <div class="cir absolute"></div>
                         <div class="relative text">
@@ -22,15 +22,15 @@
                           {{list2.Month}}月
                         </div>
                     </div>
-                    <div class="data-inner" v-show="list2.fold" v-for="(list3,index3) in list2.ChildrenTwo">
+                    <div class="data-inner" v-show="list2.fold" v-for="(list3,index3) in list2.ChildrenTwo" :key="index3">
                       <div class="time-title relative xw-date">
                         <div class="cir absolute"></div>
                         {{list.Year+"-"+list2.Month+"-"+list3.Day}}
                       </div>
                       <ul class="item-content">
-                        <li class="cm-padding relative " v-for="(item4,index4) in list3.ChildrenThree">
+                        <li class="cm-padding relative " v-for="(item4,index4) in list3.ChildrenThree" :key="index4">
                           <div class="cir absolute"></div>
-                          
+
                             <div class="content-type1 clearfix">
                                 <span class="left xw-time">{{item4.times}}</span>
                                 <div class="left xw-content"  style="color:#000">
@@ -45,14 +45,14 @@
                     </div>
                   </div>
                 </div>
-                
+
               </div>
             </template>
             <p  v-else class="text_center" style="width: 100%;padding:30px 0 0;">暂无数据..</p>
-            
+
           </div>
 
-        
+
       </template>
       <template v-else>
         <div class="text_center" style="padding:40px 0;">
@@ -69,7 +69,7 @@ import { InlineLoading   } from 'vux'
 export default {
   name: '',
   components:{
-     InlineLoading 
+     InlineLoading
   },
   mounted(){
     this.getData();
@@ -95,9 +95,9 @@ export default {
         PageIndex:1
       }).then((res)=>{
         this.loading=false;
-        
-        
-        
+
+
+
         res.List.map((el)=>{
           el.Children.map((el2,index2)=>{
               el2.fold=false;
@@ -167,7 +167,7 @@ export default {
         }
       }
     }
-    
+
     &.fi{
       border-left:1px solid #D8D8D8;
     }
@@ -183,7 +183,7 @@ export default {
         height: 40%
       }
     }
-    
+
     .cir{
         border-radius: 100%;
         width: 10px;
@@ -226,7 +226,7 @@ export default {
     // margin:0 0 10px;
     .time-title{
       padding: 10px 0;
-      background-color: white; 
+      background-color: white;
     }
     .item-content{
       margin-left: 10px;

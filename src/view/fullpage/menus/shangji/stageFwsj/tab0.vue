@@ -83,16 +83,16 @@
 
 
           <checklxr v-if="checklxr" :roleType="lxrType" :beChosed="beChosed" @peoplesetFinish="peoplesetFinish"></checklxr>
-  
+
     </div>
 </template>
 
 <script>
 import {TransferDom,CellBox,Group ,InlineLoading,Popup,CheckIcon   } from 'vux'
 import foot from './footer'
-import write from './write'
-import checklxr from './checklxr'
-import follow from './follow'
+import write from '../stage/write'
+import checklxr from '../stage/checklxr'
+import follow from '../stage/follow'
 export default {
   name: '',
   components:{
@@ -141,7 +141,7 @@ export default {
       c:null,//建立c
       onew:null,//建立1w
       needs:null,//确认客户需求
-      recordBaseInfo:[], 
+      recordBaseInfo:[],
       recordneeds:[],
       lxrC:[],
       lxrOneW:[],
@@ -305,9 +305,9 @@ export default {
       }
 
 
-      
 
-      
+
+
       // this.$http.post("/api/EnergizaSalesOpportunities/AddOppStageLXR",{
       //   listData:objArr,
       //   OppGUID:this.$route.params.id
@@ -345,12 +345,12 @@ export default {
               this.$router.go(-1);  //选择了联系人之后，点了确定就删除一个history.state
               this.$cmBus.$emit('freshStageOne');  //刷新需求引导阶段
             }else{
-              
-              
+
+
 
             }
         })
-      
+
     },
     delePeople(id,name,type){//删除联系人
       if(type=='c'){
@@ -384,7 +384,7 @@ export default {
               if(res.Success){
                 _this.$cmBus.$emit('freshStageOne');  //刷新需求引导阶段
               }else{
-                
+
                 _this.$vux.alert.show({
                   title: '删除失败！',
                   content: res.Message,
@@ -392,7 +392,7 @@ export default {
 
               }
 
-              
+
             })
           }
         })
@@ -419,7 +419,7 @@ export default {
     }
   },
   watch:{
-    // baseInfo(val,oldval){ 
+    // baseInfo(val,oldval){
     //   if(oldval===null){return;}
     //   // console.log(val)
     //   if(val){ //明确客户基础信息 跟进记录 选中
@@ -430,7 +430,7 @@ export default {
     //   }
     //   this.changeCheck(this.itemData.ListChrlid[0].stageDetailID,val)
     // },
-    // c(val,oldval){ 
+    // c(val,oldval){
     //   if(oldval===null){return;}
     //   if(val){ //建立c
     //     this.checklxr=true;
@@ -443,9 +443,9 @@ export default {
     //       }
     //     })
     //   }
-      
+
     // },
-    onew(val,oldval){ 
+    onew(val,oldval){
       if(oldval===null){return;}
       if(val){ //明确商机1w 选中
         this.checklxr=true;
@@ -458,9 +458,9 @@ export default {
           }
         })
       }
-      
+
     },
-    needs(val,oldval){ 
+    needs(val,oldval){
       if(oldval===null){return;}
       if(val){ //确认客户需求 跟进记录 选中
         this.write=true;
@@ -469,7 +469,7 @@ export default {
         this.recordneeds=[];
       }
       this.changeCheck(this.itemData.ListChrlid[3].stageDetailID,val)
-     
+
     },
     itemData:{  //检测勾选的变化
       handler(val){

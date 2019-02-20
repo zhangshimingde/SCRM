@@ -27,6 +27,11 @@
             <x-input title="商机类型" readonly v-model="oppTypeName"  placeholder="无" text-align="right"></x-input>
           </div>
         </cell-box>
+        <cell-box >
+          <div class="form-item clearfix reado">
+            <x-input title="数据来源" readonly v-model="DataSource"  placeholder="暂无相关数据" text-align="right"></x-input>
+          </div>
+        </cell-box>
         <cell-box v-if="choseqy">
           <div class="form-item clearfix qy readw" style="padding-right:0">
             <popup-radio title="签约类型" :options="optionsQy" v-model="qy" ></popup-radio>
@@ -61,6 +66,16 @@
         <cell-box>
           <div class="form-item clearfix reado" >
             <x-input title="进入当前阶段" readonly v-model="EnterintoStageTime"  placeholder="无" :show-clear="true" text-align="right"></x-input>
+          </div>
+        </cell-box>
+        <cell-box v-if="showHangUpField">
+          <div class="form-item clearfix reado">
+            <x-input title="预计重启日期" readonly v-model="restartDate"  placeholder="无" :show-clear="true" text-align="right"></x-input>
+          </div>
+        </cell-box>
+        <cell-box v-if="showHangUpField">
+          <div class="form-item clearfix reado sh">
+            <x-textarea title="挂起原因" type='textarea' readonly v-model="HangUpReason"  placeholder="无" :show-clear="true" text-align="right"></x-textarea>
           </div>
         </cell-box>
 
@@ -133,7 +148,7 @@
 </template>
 
 <script>
-import {XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading  } from 'vux'
+import {XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading ,XTextarea } from 'vux'
 import checkpeople from '../../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../../components/common/checkpeoplemultiple';
 import sjtype from './sjtype'
@@ -144,7 +159,7 @@ import kehulist from '../kehulist'
 export default {
   name: '',
   components:{
-   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio ,areas
+   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio,XTextarea ,areas
   },
   created(){
     this.setData();
@@ -180,6 +195,7 @@ export default {
       oppTypeName:"",
       canEdit:false,
       isFirstTime:true,
+      DataSource:"",
       chosekehu:false,
       chosepeople:false,
       checkpeoplemultiple:false,
@@ -200,6 +216,9 @@ export default {
       },
       StageStayDays:'',
       EnterintoStageTime:'',
+      HangUpReason:"",
+      restartDate:"",
+      showHangUpField:false,
       optionsQy:[{
           key:"sq",
           value:"首签"
@@ -256,7 +275,7 @@ export default {
   },
   methods:{
     setData(){
-       if(this.detailInfo.OppInfo.StageName=='待确认'||this.detailInfo.OppInfo.StageName=='确认中'){
+       if(this.detailInfo.OppInfo.StageName=='待确认'||this.detailInfo.OppInfo.StageName=='草稿'||this.detailInfo.OppInfo.StageName=='确认中'){
               this.canEdit=true;
             }
       if(this.detailInfo.khinfo){
@@ -285,11 +304,16 @@ export default {
           this.qy=""
         }
       this.sjName=this.detailInfo.OppInfo.OpportunitiesName;
+      this.DataSource=this.detailInfo.OppInfo.DataSource;
       this.money=this.detailInfo.OppInfo.PredictTradeMoney;
       this.date=this.detailInfo.OppInfo.PredictTradeTime?this.detailInfo.OppInfo.PredictTradeTime.substring(0,10):this.detailInfo.OppInfo.PredictTradeTime;
       this.StageName=this.detailInfo.OppInfo.StageName;
       this.EnterintoStageTime=this.detailInfo.OppInfo.EnterintoStageTime?this.detailInfo.OppInfo.EnterintoStageTime.substring(0,10):this.detailInfo.OppInfo.EnterintoStageTime;
+      this.restartDate=this.detailInfo.OppInfo.PredictReStartTime?this.detailInfo.OppInfo.PredictReStartTime.substring(0,10):this.detailInfo.OppInfo.PredictReStartTime;
+      this.HangUpReason=this.detailInfo.OppInfo.HangUpReason;
       this.StageStayDays=this.detailInfo.OppInfo.StageStayDays+"天";
+      let stageTemp=this.detailInfo.OppInfo.StageGUID.toUpperCase();
+      (stageTemp=="F3470C21-A90A-4777-8E39-7F3CF37F3DEB"||stageTemp=="754D9DF3-2D01-4F41-968E-D5DB83ED4875")?this.showHangUpField=true:this.showHangUpField=false;
       this.ways={
         name:this.detailInfo.OppInfo.SourceName,
         id:this.detailInfo.OppInfo.SourceGUID

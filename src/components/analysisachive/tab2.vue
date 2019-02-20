@@ -1,18 +1,22 @@
 <template>
       <group id="tab2">
 
-        <template  v-if="!loading">
+
           <div class="clearfix analy-header"  style="padding:5px 0">
             <div class="left analy-link-wrap">
               <span @click="changeType('签约业绩')" :class="activeType=='签约业绩'?'active':''">签约业绩</span>
               <span @click="changeType('回款业绩')" :class="activeType=='回款业绩'?'active':''">回款业绩</span>
             </div>
-
-
-            <span class="clearfix fx-sale-title" id="chose-ar">
-                <popup-picker :data="typeList" :display-format="format" :columns="2" v-model="type" ref="picker3" class="right" @on-change="choseArea" show-name></popup-picker>
-            </span>
           </div>
+
+          <div class="clearfix relative" v-show="!loading" style="top:-0.5rem">
+              <popup-picker :data="paramList" class="left date-year-picker" @on-change="getData" v-model="date"><i class="iconfont icon-rili" slot="title" style="margin-right:4px"></i></popup-picker>
+              <!-- <p class="right text_right" style="font-size:0.9rem;line-height:40px;padding-right:1rem;color:#999"><span class="left">套数 (单位：个)</span></p> -->
+              <span class="clearfix fx-sale-title" id="chose-ar">
+                  <popup-picker :data="typeList" :display-format="format" :columns="2" v-model="type" ref="picker3" class="right" @on-change="choseArea" show-name></popup-picker>
+              </span>
+          </div>
+        <template  v-if="!loading">
           <div class="charts-wrap">
 
 
@@ -115,9 +119,20 @@ export default {
       type: ['allArea','allDepartment'],
       typeList: [],
 
+      date:[(new Date()).getFullYear().toString()],
+      paramList:[this.setYearList()],
+
     }
   },
   methods:{
+    setYearList(){
+        let yearList=[];
+        let now=(new Date()).getFullYear();
+        for(let i=0;i<10;i++){
+          yearList.push((now-i).toString());
+        };
+        return yearList;
+    },
     format(value, name) {
       // console.log(name.split(" ")[1])
         if(name.split(" ")[1]=="全部部门"){
@@ -137,6 +152,7 @@ export default {
       this.$http.post(url,{
           CompanyGUID:this.type[0],
          DepartmentGUID:this.type[1],
+         Year:this.date[0]
       })
       .then((res)=>{
         // console.log(res.Data);
@@ -177,35 +193,47 @@ export default {
     getArea(){  //获取部门
       this.$http.post('/api/EnergizeSaleUser/GetRoleOrg')
       .then((res)=>{
-        // console.log(res.Data)
-        // res.Data.unshift({
-        //   name:'全部区域',
-        //   value:"allArea",
-        //   parent:""
-        // });
+
         // var temp=[];
-        // res.Data.map((el)=>{
-        //   if(el.parent==""){
-        //     temp.unshift({
-        //       name:"全部部门",
-        //       value:"allDepartment",
-        //       parent:el.value
+        // if(res.UserTopRole==0){
+        //     res.Data.unshift({
+        //       name:'全部区域',
+        //       value:"allArea",
+        //       parent:""
+        //     });
+
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+        //       }
         //     })
-        //   }
-        // })
+        // }else if(res.UserTopRole==1){
+        //     res.Data.map((el)=>{
+        //       if(el.parent==""){
+        //         temp.unshift({
+        //           name:"全部部门",
+        //           value:"allDepartment",
+        //           parent:el.value
+        //         })
+
+        //         this.type=[el.value,"allDepartment"]
+        //       }
+        //     })
+        // }else if(res.UserTopRole==2){
+        //     res.Data.map((el)=>{
+        //         this.type=[res.Data[0].value,res.Data[1].value]
+        //     })
+        // }
+
         // this.typeList=temp.concat(res.Data);
-
-
-
-
         var temp=[];
-        if(res.UserTopRole==0){
-            res.Data.unshift({
-              name:'全部区域',
-              value:"allArea",
-              parent:""
-            });
+        if(res.UserTopRole==0){ //总部负责人
 
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -213,9 +241,26 @@ export default {
                   value:"allDepartment",
                   parent:el.value
                 })
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==1){
+
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+        }else if(res.UserTopRole==1){ //区域负责人，有可能有多个区域权限
+            let count=0;
             res.Data.map((el)=>{
               if(el.parent==""){
                 temp.unshift({
@@ -224,17 +269,45 @@ export default {
                   parent:el.value
                 })
 
-                this.type=[el.value,"allDepartment"]
+                this.type=[el.value,"allDepartment"];
+                count++;
               }
             })
-        }else if(res.UserTopRole==2){
+
+
+            // 当有多个区域权限时
+            if(count>1){
+              temp.unshift({
+                  name:'全部区域',
+                  value:"allArea",
+                  parent:""
+              })
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:"allArea"
+              })
+              this.type=["allArea","allDepartment"];
+            }
+
+
+        }else if(res.UserTopRole==2){ //部门负责人，有可能有多个部门权限
             res.Data.map((el)=>{
                 this.type=[res.Data[0].value,res.Data[1].value]
             })
+
+            // 当有多个部门权限时
+            if(res.Data.length>2){
+              temp.unshift({
+                  name:"全部部门",
+                  value:"allDepartment",
+                  parent:res.Data[0].value
+              })
+              this.type=[res.Data[0].value,"allDepartment"];
+            }
         }
 
         this.typeList=temp.concat(res.Data);
-        // console.log(this.typeList);
         this.getData();
 
       })

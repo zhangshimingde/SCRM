@@ -12,7 +12,7 @@
             暂无数据..
           </div>
         </div>
-        
+
       </template>
       <template v-else>
         <div class="text_center" style="padding:40px 0;">
@@ -38,6 +38,7 @@ export default {
   created(){
     this.getInitData()
   },
+  props:["flag","beChose"],
   data () {
     return {
       loading:true,
@@ -68,7 +69,7 @@ export default {
           this.temp.push({
               key:el.UserGUID,
               value:el.UserName
-          })  
+          })
         })
 
         this.options=this.temp;
@@ -99,7 +100,7 @@ export default {
         })
       })
     },
-    comfirm(){ 
+    comfirm(){
       if(this.value.length<1) return;
       var params=[],hash={};
       this.value.map((el)=>{
@@ -108,12 +109,12 @@ export default {
             params.push({
                 name:vl.value,
                 id:vl.key
-            })  
+            })
           };
         })
-        
+
       });
-      console.log(params[0])
+      // console.log(params[0])
       this.$emit('choseFinish',params[0])
     },
     cancel(){
@@ -121,6 +122,13 @@ export default {
     }
   },
   watch:{
+    flag(val){
+      if(val){
+        this.value=this.beChose.map(el=>{
+              return el
+        });
+      }
+    },
     key(val){
       if(!val){
         this.options=this.temp;
@@ -143,7 +151,7 @@ export default {
   background-color: white;
   .header{
     display: flex;
-    @h:3rem;  
+    @h:3rem;
     height: @h;
     line-height: @h;
     text-align: center;

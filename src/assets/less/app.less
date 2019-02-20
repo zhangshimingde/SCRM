@@ -5,6 +5,29 @@
 .wordbreak{
 	word-break:break-all;
 }
+.clickable{
+  color:#0992FF
+}
+.weui-cell_access .weui-cell__ft:after{
+  transform: rotate(135deg) translate(-2px,-0px) !important;
+}
+.cm-date-picker{
+  top:0;
+  right:0;
+  position: absolute !important;
+  z-index: 2;
+  font-size: 0.9rem;
+}
+.swipe-plungin{
+  height:140px;
+  padding:15px 0 !important;
+  z-index:2 !important;
+  background:transparent !important;
+  .swipe-item{
+    padding:0 15px;
+    box-sizing:border-box
+  }
+}
 #app{
 	overflow-x:hidden;
 	overflow-y: auto;
@@ -12,6 +35,17 @@
 }
 .vux-swipeout{
   position: relative;
+}
+.scroll-tab{
+  overflow-x:hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
+}
+.hmax{
+  height: 100%;
+  overflow-x:hidden;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 }
 .vux-swipeout:after {
     content: " ";
@@ -100,7 +134,7 @@
   right: -0.5rem;
 }
 .reado{
-  input{
+  input,textarea{
     color: #b2b2b2
   }
 }

@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import off from "./off"
+import off from "../stage/off"
 export default {
   name: '',
   components:{

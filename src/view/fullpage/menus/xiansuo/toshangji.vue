@@ -102,11 +102,28 @@
             <span class="right content">{{ways.name}}</span>
           </div>
         </cell-box>
-        <cell-box v-show="!IsManager">
+        <!-- <cell-box v-show="!IsManager">
           <div class="form-item clearfix sh readw" style="padding-right:0" >
             <x-switch title="发起确认审核" v-model="isShenhe"></x-switch>
           </div>
+        </cell-box> -->
+        <!--商机挂起 -->
+        <cell-box>
+          <div class="form-item clearfix sh" style="padding-right:0" >
+            <x-switch title="是否挂起" v-model="isHangUp"></x-switch>
+          </div>
         </cell-box>
+        <cell-box  v-show="isHangUp">
+          <div class="form-item clearfix restartDate" style="padding-right:0" >
+            <calendar title="预计重启日期" class="datecalendar" disable-past :start-date="startDate" placeholder="必填" v-model="reStartDate"></calendar>
+          </div>
+        </cell-box>
+        <cell-box  v-show="isHangUp">
+          <div class="form-item clearfix reado resartReason" style="" >
+            <x-textarea title="挂起原因" v-model="hangUpReason" placeholder="必填"  text-align="right"></x-textarea>
+          </div>
+        </cell-box>
+<!-- // end -->
         <cell-box v-if="isShenhe">
           <div class="form-item clearfix" style="padding-right:0">
             <p>上级确认人 <span style="font-size:0.9rem;color:#b2b2b2">(点击头像切换)</span></p>
@@ -188,7 +205,7 @@
 </template>
 
 <script>
-import {XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading  } from 'vux'
+import {XInput,Calendar ,XSwitch,XTextarea ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading  } from 'vux'
 import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../components/common/checkpeoplemultiple';
 import sjtype from './compo/sjtype'
@@ -196,16 +213,28 @@ import products from './compo/products'
 import ways from './compo/ways'
 import kehulist from './kehulist'
 import business from './compo/business'
+import moment from 'moment'
 export default {
   name: '',
   components:{
-   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio ,business
+   XInput ,Group,Popup,kehulist ,XSwitch,XTextarea ,InlineLoading,CellBox ,checkpeople,sjtype,ways,products,Calendar,checkpeoplemultiple,PopupRadio ,business
   },
   created(){
     this.getdefaultzzr();
     this.getInfoData();
-    this.baseInfo.name=this.$route.params.name;
-    this.baseInfo.phone=this.$route.params.phone;
+
+
+    // 获取默认数据
+    this.$http.post("/api/EnergizaSaleClueController/GetDetailInfo",{
+      OpportunityGUID:this.$route.params.id
+    })
+    .then(res=>{
+      this.baseInfo.name=res.Data.ContactName;
+      this.baseInfo.phone=res.Data.Telephone;
+      this.baseInfo.jobs=res.Data.JobTitle;
+      this.baseInfo.sex=res.Data.Sex?(res.Data.Sex=="女"?"0":"1"):"";
+    })
+
   },
   directives: {
     TransferDom
@@ -222,11 +251,12 @@ export default {
   },
   data () {
     return {
+      startDate:moment().add(1, 'days').format("YYYY-MM-DD"),
       baseInfo:{
         name:"",
         phone:"",
         business:"",
-        sex:"1",
+        sex:"",
         jobs:"",
       },
       business:false,
@@ -237,6 +267,9 @@ export default {
       },{
         key:"0",
         value:"女"
+      },{
+        key:"",
+        value:"不详"
       }],
       IsManager:false,
       chosekehu:false,
@@ -296,7 +329,11 @@ export default {
         name:"必填",
         id:""
       },//来源渠道
-      pdall:[] //保存所有的需求产品
+      pdall:[], //保存所有的需求产品
+
+      isHangUp:false,
+      reStartDate:"",
+      hangUpReason:""
     }
   },
   methods:{
@@ -495,7 +532,7 @@ export default {
         }
       })
       .then((res)=>{
-        console.log(res)
+        // console.log(res)
         if(fn) fn(res.Data);
 
       })
@@ -534,7 +571,7 @@ export default {
     //对输入框进行正则验证
     onBlur(){
       var _this=this;
-      var  reg=/^[1]{1}[34578]{1}[0-9]{9}$/;
+      var  reg=/^1[3456789][0-9]{9}$/;
       if(this.baseInfo.phone){
         if(reg.test(this.baseInfo.phone)){
         }else{
@@ -580,6 +617,14 @@ export default {
             })
             return ;
           }
+
+          if(this.isHangUp&&!(this.reStartDate&&this.hangUpReason)){
+            this.$vux.alert.show({
+              title: '友情提示',
+              content: '必填项请填写完整！'
+            })
+            return ;
+          }
           var rebuy;
 
            //首签、续签
@@ -622,7 +667,13 @@ export default {
             Business:this.baseInfo.business,
             JobTitle:this.baseInfo.jobs,
             UserGUID:teamid.join(','),
-            IsRebuy:rebuy
+            IsRebuy:rebuy,
+            DataSourceDetails:"移动端线索转化",
+            DataSource:'线索转化',
+
+            IsHangUp:this.isHangUp,
+            HangUpReason:this.hangUpReason,
+            PredictReStartTime:this.reStartDate
           })
           .then((res)=>{
               this.$vux.loading.hide();
@@ -666,6 +717,11 @@ export default {
 
 <style lang="less">
 #shangjiadd{
+  .restartDate,.resartReason{
+    .weui-cell{
+        padding: 0 !important;
+    }
+  }
   background-color: #F6F6F6;
   .form-item{
     width: 100%;

@@ -46,13 +46,14 @@
 
     <div class="fixed cancel-btn" @click="cancel">取消</div>
   </div>
-      
+
 </template>
 
 <script>
 import {Search,Popup, Cell,CellBox,Group ,InlineLoading  } from 'vux'
 export default {
   name: '',
+  props:['id'],
   components:{
     Search,Cell,CellBox,Group,Popup ,InlineLoading
   },
@@ -91,7 +92,8 @@ export default {
       this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
         FullName:this.key,
         PageIndex:this.page,
-        PageSize:100
+        PageSize:100,
+        KHGUID:this.id
       })
       .then((res)=>{
         // console.log(res.Data);
@@ -104,7 +106,7 @@ export default {
         res.Data.SOListDataTable.map((el)=>{
            this.data.push(el);
         })
-       
+
       })
     },
     loadMore() {
@@ -116,7 +118,7 @@ export default {
     },
     sub(){ //搜索
       if(!this.key) return;
-      
+
       this.page=0;
       this.getData(true);
     },
@@ -163,6 +165,7 @@ export default {
   left: 0;
   top:0;
   color: #666;
+  z-index:4;
   .contents{
     flex-grow:1;
     background-color: white;

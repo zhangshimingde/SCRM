@@ -6,11 +6,16 @@
             <p class="title">客户信息</p>
           </div>
         </cell-box>
-        <cell-box is-link  v-if="!disabled">
-          <div class="form-item clearfix" @click="chosekehu=true">
+        <cell-box v-if="!disabled" class="clearfix">
+          <!-- <div class="form-item clearfix" @click="chosekehu=true">
             <span class="left banner" v-bind:style="{'color':kehuName?'red!important':'#000'}">客户名称</span>
             <span class="right content">{{kehu.name?kehu.name:"请选择"}} <icon type="warn" v-if="kehuName"></icon></span>
+          </div> -->
+
+          <div class="form-item clearfix" style="width:90%" >
+            <x-input  title='客户名称' v-model="kehu.name" placeholder="必填" :show-clear="true" text-align="right"></x-input>
           </div>
+          <i class="iconfont icon-xinzenglianxiren" @click="chosekehu=true" style="color:#3079D5;font-size:1.2rem"></i>
         </cell-box>
         <cell-box v-else>
           <div class="form-item clearfix">
@@ -38,7 +43,7 @@
           </div>
         </cell-box>
         <cell-box is-link>
-          <div class="form-item clearfix" @click="openSelect('product')">
+          <div class="form-item clearfix" @click="openSelect('products')">
             <span class="left banner" v-bind:style="{'color':productIcon?'red!important':'#000'}">需求产品</span>
             <div class="right content">
               <span v-for="(item,index) in products" :key="index">
@@ -67,6 +72,26 @@
             <span class="right content"  >{{area.name}}</span>
           </div>
         </cell-box>
+        <cell-box>
+          <div class="form-item clearfix" style="padding-right:0">
+            <p>跟进人 <span style="font-size:0.9rem;color:#b2b2b2">(点击头像可删除)</span></p>
+            <ul class="clearfix user-pic">
+              <li class="left" >
+                <div class="avater" @click="checkpeoplemultiple=true" style="background-image:url(static/img/add.png);background-size:50%;background-repeat:no-repeat;border:1px solid #eaeaea"></div>
+              </li>
+
+              <li class="left" v-for="(item,index) in gjr" v-if="gjr.length>0" @click="removePeople(item,index)" :key="index">
+                <div class="cm-bac avater" :style="{backgroundImage:'url('+item.avater+')'}"></div>
+                <p class="name">{{item.label}}</p>
+              </li>
+            </ul>
+          </div>
+        </cell-box>
+        <cell-box>
+          <div class="form-item clearfix sh" style="padding-right:0" >
+            <x-switch title="分配给自己" v-model="mySelf"></x-switch>
+          </div>
+        </cell-box>
         <cell-box is-link>
           <div class="form-item clearfix" @click="openSelect('way')">
             <span class="left banner" v-bind:style="{'color':wayShow?'red!important':'#000'}">来源渠道</span>
@@ -85,10 +110,17 @@
       <kehulist v-if="chosekehu" @choseFinish="choseKehuFinish"></kehulist>
 
 
-
-      <div v-transfer-dom>
+      <div v-transfer-dom >
         <popup v-model="cmParamChose" :popup-style="{background:'white'}" position="right" width="80%">
-          <danxs :prama="cmParamList" :canEmpty="canEmpty" :count="count"  @choseFinish="cmChoseFinish"></danxs>
+          <danxs :prama="cmParamList" :beChose="beChose"  :canEmpty="canEmpty" :count="count"  @choseFinish="cmChoseFinish"></danxs>
+        </popup>
+      </div>
+
+
+      <!-- 跟进人 -->
+      <div v-transfer-dom >
+        <popup v-model="checkpeoplemultiple" :popup-style="{background:'white'}" position="right" width="80%">
+          <checkpeoplemultiple @choseFinish="changedGjr" @choseCancel="checkpeoplemultiple=false" :beChose="gjr" :areaId="area.id"></checkpeoplemultiple>
         </popup>
       </div>
     </form>
@@ -100,17 +132,18 @@ import kehulist from './kehulist'
 import danxs from '../../../../components/common/choseDanXS'
 import store from "../../../../vuex/store.js"
 import bus from "../../../../assets/js/eventBus.js"
+import checkpeoplemultiple from '@/components/common/checkpeoplemultipleXS';
 export default {
   name: '',
   components:{
-   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,Calendar,PopupRadio ,XTextarea,danxs,Loading,Icon
+   XInput ,Group,Popup,kehulist ,XSwitch ,InlineLoading,CellBox ,Calendar,PopupRadio ,XTextarea,danxs,Loading,Icon,checkpeoplemultiple
   },
   created(){
     this.getInfoData();
     this.kehu.name=store.state.flName
     this.kehu.id=store.state.KHGUIDs
     //利用中央走线的方式进行父子组件之间的通讯传值，这里进行监听
-    // const _this = this
+
     bus.$on('getkehuName',(val)=>{
 
       this.kehu={
@@ -128,6 +161,7 @@ export default {
     if(this.$route.params.lxrId){
          this.getData();
     }
+    this.getdefaultzzr();
   },
   directives: {
     TransferDom
@@ -144,6 +178,7 @@ export default {
   },
   data () {
     return {
+      checkpeoplemultiple:false,
       lists:null,
       canEmpty:false,
       chosekehu:false,
@@ -152,6 +187,10 @@ export default {
       cmParamChose:false,
       count:"",
       kehu:{
+        name:"必填",
+        id:""
+      },
+      kehuTemp:{
         name:"必填",
         id:""
       },
@@ -190,6 +229,11 @@ export default {
       productlistAll:[],
       disabled:false,
 
+      gjr:[],
+      mySelf:false,
+      my:null,
+      beChose:[]
+
     }
   },
   methods:{
@@ -201,6 +245,10 @@ export default {
             this.disabled=true;
             this.name=res.Data.LxrName;
             this.kehu={
+              name:res.Data.KhName,
+              id:res.Data.KHGUID
+            };
+            this.kehuTemp={
               name:res.Data.KhName,
               id:res.Data.KHGUID
             };
@@ -265,25 +313,98 @@ export default {
         name:params.name,
         id:params.id
       }
+      this.kehuTemp={
+        name:params.name,
+        id:params.id
+      }
     },
+    // 跟进人逻辑
+    removePeople(item,index){
+      this.gjr.splice(index,1);
+    },
+      changedGjr(params){  //选择跟进人
+        // console.log(params);
+        this.checkpeoplemultiple=false;
+        if(params.length>0){
+          // 选择跟进人后，比较所选跟进人是否同一区域,不是则删除后一个人
+          this.judgeGjrArea(params.join(","),res=>{
+            if(!res.Data.IsSameBuGuid){
+                params.pop();
+                this.$vux.alert.show({
+                  title: '友情提示',
+                  content: '跟进人成员不属于同一个区域！',
+                })
+            }
+
+            this.gjr=[];
+            params.map((el)=>{
+              this.getUserData(el,(data)=>{
+                this.gjr.push({
+                  label:data.UserName_Chn,
+                  value:el,
+                  avater:data.UserIcon
+                })
+              })
+            })
+
+            console.log(this.gjr)
+
+
+          });
+
+          // 回填第一个人的区域
+          this.getUserArea(params[0],res=>{
+            this.area={id:res.Data.AreaID,name:res.Data.BuName};
+          })
+
+        }else{ //选择区域以后，跟进人被清空后，重置提交字段
+          this.gjr=[];
+        }
+      },
+      judgeGjrArea(userId,fn){//比较所选跟进人是否同一区域
+        this.$http.post('/api/EnergizeAction/IsSameBuGuid',{
+          GuidStr:userId
+        })
+        .then(res=>{
+          if(fn) fn(res);
+        })
+      },
+      getUserArea(userId,fn){ //获取用户所属区域
+        this.$http.post('/api/EnergizeAction/GetUserInfo',{
+          UserGuid:userId
+        })
+        .then(res=>{
+          // console.log(res);
+          if(fn) fn(res);
+        })
+      },
+      getdefaultzzr(){  //获取默认主责人
+        this.$http.get("/api/EnergizeSaleUser/WeiXinUserInfo")
+        .then((res)=>{
+          this.my={label:res.Data.UserName_Chn,value:res.Data.UserGUID,avater:res.Data.UserIcon};
+        })
+      },
+      // end
     openSelect(type){
       this.cmParamChose=true;
       this.cmParamType=type;
-      console.log(this.productlist)
+      // console.log(this.productlist)
       switch(type){
-        case 'product':this.cmParamList=this.productlist;this.count="multiple";this.canEmpty=true;break;
+        case 'products':this.cmParamList=this.productlist;this.count="multiple";this.canEmpty=true;break;
         case 'area':this.cmParamList=this.arealist;this.count="";this.canEmpty=false;break;
         case 'way':this.cmParamList=this.waylist;this.count="";this.canEmpty=false;break;
         case 'xstype':this.cmParamList=this.xstypelist;this.count="multiple";this.canEmpty=false;break;
       }
+      (type=='xstype'||type=='products')?this.beChose=this[type]:this.beChose=[this[type]];
 
       // console.log(this.cmParamList);
     },
     cmChoseFinish(params){
+      // console.log(params)
       this.cmParamChose=false;
 
       switch(this.cmParamType){
-        case 'product':this.products=params;break;
+        case 'products':this.products=params;break;
         case 'area':this.area={
                         name:params.name,
                         id:params.id
@@ -308,15 +429,32 @@ export default {
       }
 
     },
+    getUserData(id,fn){
+      this.$http.get("/api/EnergizeSaleUser/WeiXinUserInfoByUserGUID",{
+        params:{
+          userGUID:id
+        }
+      })
+      .then((res)=>{
+        // console.log(res)
+        if(fn) fn(res.Data);
 
+      })
+    },
 
     goSubmit(){
+      //  let gjrName=this.gjr.map(el=>{
+      //     return el.label;
+      //   })
+      // console.log(gjrName);return;
+      // console.log(this.kehu.name+","+this.kehu.id);
+      //  return;
       //判断客户名称为空提示
-      if(!this.kehu.id){
-        this.kehuName=true
-      }else{
-        this.kehuName=false
-      }
+      // if(!this.kehu.id){
+      //   this.kehuName=true
+      // }else{
+      //   this.kehuName=false
+      // }
       //判断联系人不为空提示
       let colorStyle='color:red;'
       let IconStyle='error'
@@ -360,9 +498,12 @@ export default {
         this.xstypeShow=false
       }
 
-    //  console.log(this.products)
+
       // if(this.name&&this.kehu.id&&this.productsinfo&&this.phone&&(this.products[0].id)&&this.area.id&&this.way.id&&this.xstype[0].id){//必填项
-      if(this.name&&this.kehu.id&&this.productsinfo&&this.phone&&this.area.id&&this.way.id&&this.xstype[0].id){//必填项
+      let gjrId=this.gjr.map(el=>{
+          return el.value;
+        })
+      if(this.name&&this.kehu.name&&this.productsinfo&&this.phone&&this.area.id&&this.way.id&&this.xstype[0].id){//必填项
 
           // 产品id列表
           var pdid=[],xsid=[],pdname=[],xsname=[];
@@ -382,7 +523,7 @@ export default {
               this.$http.post("/api/EnergizaSaleClueController/AddClueData",{
                 ContactName:this.name,
                 KHGUID:this.kehu.id,
-                // CustomerName:this.kehu.name,
+                CustomerName:this.kehu.name,
                 // ProductName:pdname.join(' '),
                 ProductID:pdid.join(','),
                 Telephone:this.phone,
@@ -392,7 +533,8 @@ export default {
                 ChannelID:this.way.id,
                 // OpportunityTypeName:xsname.join(' '),
                 OpportunityTypeID:xsid.join(','),
-                RequirementDesc:this.productsinfo
+                RequirementDesc:this.productsinfo,
+                FollowerGuid:gjrId.join(",")
               })
               .then((res)=>{
                   this.$vux.loading.hide();
@@ -424,7 +566,7 @@ export default {
     //对输入框进行正则验证
     onBlur(){
       var _this=this;
-      var  reg=/^[1]{1}[34578]{1}[0-9]{9}$/;
+      var  reg=/^1[3456789][0-9]{9}$/;
       if(this.phone){
         if(reg.test(this.phone)){
         }else{
@@ -448,6 +590,77 @@ export default {
 
 
 
+  },
+  watch:{
+    kehu:{
+      handler(val){
+        // console.log(val.name+","+this.kehuTemp.name)
+        if(val.id==this.kehuTemp.id&&val.name!=this.kehuTemp.name){
+
+          this.kehuTemp.id=this.kehu.id="00000000-0000-0000-0000-000000000000";
+        }
+      },
+      deep:true
+    },
+    // 跟进人逻辑
+      mySelf(val){
+        if(val){
+          // 判断如果已经选了自己，则return
+          let inde=-100;
+          this.gjr.map((el,index)=>{
+            if(el.value==this.my.value)inde=index
+          })
+          if(inde>-1){
+            return;
+          }
+          // end
+
+          let ids=this.gjr.map(el=>{
+            return el.value
+          })
+          ids.push(this.my.value);
+          this.judgeGjrArea(ids.join(","),res=>{
+            if(!res.Data.IsSameBuGuid){
+                ids.pop();
+                this.mySelf=false;
+                this.$vux.alert.show({
+                  title: '友情提示',
+                  content: '跟进人成员不属于同一个区域！',
+                })
+            }else{
+              this.gjr.push(this.my);
+            }
+          });
+          // 回填第一个人的区域
+          this.getUserArea(ids[0],res=>{
+            this.area={id:res.Data.AreaID,name:res.Data.BuName};
+          })
+        }else{
+          // 判断有没有选自己，如果有，在删除
+          let inde=-100;
+          this.gjr.map((el,index)=>{
+            if(el.value==this.my.value)inde=index
+          })
+          if(inde>-1){
+            this.gjr.splice(inde,1)
+          }
+
+        }
+
+
+      },
+      gjr:{
+        handler(val){
+        // 判断如果已经选了自己，则分配自己开关打钩
+            let inde=-100;
+            val.map((el,index)=>{
+              if(el.value==this.my.value)inde=index
+            })
+            inde>-1?this.mySelf=true:this.mySelf=false;
+            // end
+        },
+        deep:true
+      }
   }
 }
 </script>

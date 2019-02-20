@@ -338,7 +338,9 @@ export default {
     closeTimeMask(params){ //变更时间提交
       this.changetime=false;
       if (!params) {return ;};
-      this.$store.commit('updateLoadingStatus', {isLoading: true});
+      this.$vux.loading.show({
+             text: '正在提交..'
+            });
       this.$http.post('/api/EnergizeAction/ChangeReceivableSp',{
           type:"应收时间",
           ReceivablesGUIDs:this.idList.join(','),
@@ -349,11 +351,20 @@ export default {
        })
       .then((res)=>{
         // console.log(res)
-        this.$store.commit('updateLoadingStatus', {isLoading: false});
-        this.$vux.toast.show({
-         text: '变更应收时间成功！',
-         time:500
-        })
+        this.$vux.loading.hide();
+        if(res.Success){
+            this.$vux.toast.show({
+              text: '变更应收时间成功！',
+              time:"500"
+             })
+
+        }else{
+          this.$vux.alert.show({
+              title: '操作失败!',
+              content: res.Message
+            })
+        }
+
       })
 
     },
@@ -361,7 +372,9 @@ export default {
       this.changepeople=false;
       if (!params) {return ;};
       // console.log(params)
-      this.$store.commit('updateLoadingStatus', {isLoading: true});
+      this.$vux.loading.show({
+             text: '正在提交..'
+            });
       this.$http.post('/api/EnergizeAction/ChangeReceivableSp',{
           type:"应收责任人",
           ReceivablesGUIDs:this.idList.join(','),
@@ -372,11 +385,19 @@ export default {
        })
       .then((res)=>{
         // console.log(res)
-        this.$store.commit('updateLoadingStatus', {isLoading: false});
-        this.$vux.toast.show({
-         text: '变更责任人成功！',
-         time:500
-        })
+        this.$vux.loading.hide();
+        if(res.Success){
+            this.$vux.toast.show({
+              text: '变更责任人成功！',
+              time:"500"
+             })
+
+        }else{
+          this.$vux.alert.show({
+              title: '操作失败!',
+              content: res.Message
+            })
+        }
       })
     },
     formatMonth(value) {

@@ -7,8 +7,8 @@
         <tab-item :selected="index==2" @on-item-click="index=2">产品结构分析</tab-item>
       </tab>
     </div>
-    
-	
+
+
 
     <div class="table-wrap" style="padding-top:42px">
         <tab1 v-if="index==0"></tab1>
@@ -42,7 +42,7 @@ export default {
 
 <style lang="less">
 @import '../../../assets/less/exports.less';
-  .table-wrap{
-  	padding: 10px 0;
-  }
+  // .table-wrap{
+  // 	padding: 10px 0;
+  // }
 </style>

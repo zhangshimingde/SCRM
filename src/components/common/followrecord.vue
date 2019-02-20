@@ -26,10 +26,14 @@
 
                          <p class=" contents" v-html="item.RealContent"></p>
                         <!-- 附加信息 -->
-                        <!-- <div class="clearfix extra-info">
+                        <div class="clearfix extra-info">
                           <div class="left" v-if="item.LxrName" style="margin-right:15px;">{{item.LxrName}}</div>
-                          <div class="left">{{item.RecordType}}</div>
-                        </div> -->
+                          <div class="left" v-if="item.RecordType" @click="changeRecordType(item)" style="margin-right:15px;">
+
+                            {{item.RecordType}}
+                          </div>
+                          <div class="left" @click="changeCash(item)">{{item.CostAmount?item.CostAmount:0}}元</div>
+                        </div>
                         <!-- 评论模块 -->
                         <ul class="comments-wrap"  v-if="item.comments.length>0">
                           <li v-for="(commentsItem,index3) in item.comments" :key="index3">
@@ -64,12 +68,14 @@
               <div class="left input-box" style="width:100%"  @click="writes(false)"> <x-input readonly placeholder="快速记录"></x-input></div>
               <!-- <div class="right yuyin" @click="writes(true)"><i class="iconfont icon-yuyin"></i></div> -->
             </div>
-            <!-- 发表记录，评论 -->
-            <div v-transfer-dom>
+            <!-- 评论 -->
+            <!-- <div v-transfer-dom>
               <popup v-model="isPublish" @on-hide="openYy=false"  :popup-style="{background:'white'}" position="bottom" height="50%">
-                <publish @pubFinish="pubFinish" :openYy="openYy"></publish>
+                <publishsimple @pubFinish="pubFinish" :openYy="openYy"></publishsimple>
               </popup>
-            </div>
+            </div> -->
+            <!-- 发表记录-->
+            <publish v-if="isPublish" :chosePoepleType="ProType" :pubType="pubType" @pubFinish="pubFinish" @pubCancel="isPublish=false" :openYy="openYy"></publish>
           </div>
 
            <!-- 转商机的线索跟进记录 -->
@@ -139,17 +145,24 @@
       </template>
 
       <voice v-if="openYy" @comfirm="comfirmVoice" @cancel="cancelVoice"></voice>
+
+      <cash v-if="cashShow" :followId="recordId" @closeCash="cashShow=false" @cashFinish="cashFinish"></cash>
+
+      <group>
+        <popup-picker :show.sync="showPopupPicker" :show-cell="false" title="TEST" :data="dynamicWayList" @on-change="popupChange"></popup-picker>
+      </group>
     </div>
 </template>
 
 <script>
-import { Search,Checklist,Group,InlineLoading,TransferDom ,XInput ,Popup } from 'vux'
+import { Search,Checklist,Group,InlineLoading,TransferDom ,XInput ,Popup,PopupPicker  } from 'vux'
 import publish from "./publish"
+import cash from './cashModel'
 import voice from '../voice'
 export default {
   name: '',
   components:{
-    Group ,InlineLoading,XInput ,Popup,publish,voice
+    Group ,InlineLoading,XInput ,Popup,publish,voice,cash,PopupPicker
   },
   directives: {
     TransferDom
@@ -162,13 +175,17 @@ export default {
   data () {
     return {
       pubType:"",
+      cashShow:false,
       loading:true,
       isPublish:false,
       openYy:false,
       myCode:"",
       recordId:"",
       followList:[],
-      XSfollowList:[]
+      XSfollowList:[],
+      showPopupPicker:false,
+      // dynamicWayList:[{key:"拜访",value:"拜访"},{key:"来电",value:"来电"},{key:"来访",value:"来访"},{key:"邮寄",value:"邮寄"},{key:"email",value:"email"},{key:"微信",value:"微信"}],
+      dynamicWayList:[["拜访","来电","来访","邮寄","email","微信","去电"]],
     }
   },
   filters:{
@@ -182,6 +199,10 @@ export default {
     }
   },
   methods:{
+    cashFinish(){
+      this.cashShow=false;
+      this.getData();
+    },
     getData(){ //获取跟进记录
       this.loading=true;
       this.$http.post("/api/EnergizaSalesOpportunities/GetFollowLogViewByOppGUID",{
@@ -209,13 +230,18 @@ export default {
 
       if(this.pubType=="records"){ //发布新的跟进记录
           this.$http.post("/api/AjaxFollowLogController/AddFollowLogUserDefined",{
-            ChangeTitle:param,
+            ChangeTitle:param.content,
             sourceGUID:"6ce57741-342b-4070-a121-a02be403cc97",
             OpportunitiesGUID:this.id,
             Type:3,
             SourceType:this.ProType , //类型，1.商机 2 客户 3 联系人,
-            RecordType:"拜访",
-            SourcePort:"移动端SCRM"
+            RecordType:param.dynamicWay,
+            SourcePort:"移动端SCRM",
+
+            LxrName:param.people.name,
+            SortGUID:param.people.id,
+            CostDate:param.cashDate,
+            CostParamList:param.cashList
           })
           .then((res)=>{
             this.$vux.loading.hide()
@@ -236,8 +262,9 @@ export default {
           })
       }else{  //发表评论
           this.$http.post("/api/AjaxFollowLogController/AddFollowReplyNew",{
-            ReplyContent:param,
-            ChangeGUID:this.recordId
+            ReplyContent:param.content,
+            ChangeGUID:this.recordId,
+            RelationGUID:this.id
           })
           .then((res)=>{
             // console.log(res)
@@ -268,6 +295,41 @@ export default {
       this.isPublish=true;
       // this.openYy=false;
       this.recordId=item.FlowerGUID;
+    },
+    changeCash(item){//费用弹窗
+      this.cashShow=true;
+      this.recordId=item.FlowerGUID;
+    },
+    changeRecordType(item){//发表类型弹窗
+      this.showPopupPicker=true;
+      this.recordId=item.FlowerGUID;
+    },
+    popupChange(params){
+      console.log(params[0])
+      this.$vux.loading.show({
+         text: '正在提交..'
+        })
+      this.$http.post("/api/AjaxFollowLogController/UpdateFollowLog",{
+            FlowerGUID:this.recordId,
+            RecordType:params[0]
+      })
+      .then((res)=>{
+        this.$vux.loading.hide()
+            if(res.Success){
+                this.$vux.alert.show({
+                  title: '友情提示',
+                  content: "提交成功！"
+                })
+
+                this.getData();
+
+            }else{
+                this.$vux.alert.show({
+                  title: '提交失败',
+                  content: res.Message
+                })
+            }
+      })
     },
     comfirmVoice(val){
       this.openYy=false;
@@ -344,9 +406,9 @@ export default {
       arr.map((el)=>{
         // el.list_fry.avater=""; //给默认空头像
         el.entity_flr.comments=el.list_fry||[];
-        if(el.entity_flr.LastEditTime){
-          el.entity_flr.date=el.entity_flr.LastEditTime.substring(0,10);
-          el.entity_flr.time=el.entity_flr.LastEditTime.substring(11,16);
+        if(el.entity_flr.CreateTime){
+          el.entity_flr.date=el.entity_flr.CreateTime.substring(0,10);
+          el.entity_flr.time=el.entity_flr.CreateTime.substring(11,16);
         }
         // el.entity_flr.avater="" //给默认空头像
         delete el["list_fry"];

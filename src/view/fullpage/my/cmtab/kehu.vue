@@ -54,8 +54,8 @@
 
 <script>
 import {TransferDom, Tab, TabItem,Search,PopupRadio ,Popup, Group,InlineLoading  } from 'vux'
-import list from './kehulistmore';
-import condition from './kehucondition';
+import list from '@/view/fullpage/menus/kehu/kehulistmore';
+import condition from '@/view/fullpage/menus/kehu/kehucondition';
 export default {
   name: '',
   directives: {
@@ -112,7 +112,7 @@ export default {
         this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
           FullName:this.key,
           PageIndex:this.page,
-          PageSize:50,
+          PageSize:15,
           KHCompanyLevelCodeMultipleChoice:this.condition.khLevel,
           ZbSortItemGUIDMultipleChoice:this.condition.levelOne,
           QySortItemGUIDMultipleChoice:this.condition.levelTwo,
@@ -138,7 +138,7 @@ export default {
         this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
           FullName:this.key,
           PageIndex:this.page,
-          PageSize:50,
+          PageSize:15,
           KHCompanyLevelCodeMultipleChoice:this.condition.khLevel,
           ZbSortItemGUIDMultipleChoice:this.condition.levelOne,
           QySortItemGUIDMultipleChoice:this.condition.levelTwo,

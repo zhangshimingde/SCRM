@@ -2,13 +2,15 @@
     <div id="tab1">
 
 
-        <template  v-if="!loading">
-          <div class="clearfix analy-header" style="padding:5px 0">
-            <div class="left analy-link-wrap">
+
+          <div class="clearfix analy-header relative" v-show="!loading" style="padding:5px 0">
+            <!-- <div class="left analy-link-wrap">
               <span @click="changeType('本月')" :class="activeType=='本月'?'active':''">本月</span>
               <span @click="changeType('年度')" :class="activeType=='年度'?'active':''">年度</span>
-            </div>
+            </div> -->
+            <datepicker @changeDates="changeDates" class="absolute cm-date-picker"/>
           </div>
+        <template  v-if="!loading">
           <div class="charts-rwap relative">
             <p class="text_right chart-dw" style="font-size:0.9rem;padding-right:1rem;color:#999">(单位：个)</p>
             <charts id="tab11-charts" styles="width:100%;height:19rem;margin:0 auto" :option="echartsOptions"></charts>
@@ -31,13 +33,13 @@
                   <tbody>
                     <tr v-for="(item,index) in tableData"  @click="getDetail(item)" :key="index">
                       <td>{{item.AreaName}}</td>
-                      <td>{{item.XzCount}}</td>
-                      <td>{{item.GJZCount}}</td>
+                      <td @click="toTranslate(item,'OppNewAdd')" :class="rankType=='员工'?'clickable':''">{{item.XzCount}}</td>
+                      <td @click="toTranslate(item,'OppFollow')" :class="rankType=='员工'?'clickable':''">{{item.GJZCount}}</td>
                       <td>{{item.AvgDayCount}}</td>
                       <td>{{item.AvgAmount}}万</td>
-                      <td v-if="activeType=='本月'">{{item.DQYCount}}</td>
-                      <td>{{item.CJCount}}</td>
-                      <td>{{item.FCJCount}}</td>
+                      <td @click="toTranslate(item,'OppBeSign')" :class="rankType=='员工'?'clickable':''" v-if="activeType=='本月'">{{item.DQYCount}}</td>
+                      <td @click="toTranslate(item,'OppDeal')" :class="rankType=='员工'?'clickable':''">{{item.CJCount}}</td>
+                      <td @click="toTranslate(item,'OppNoDeal')" :class="rankType=='员工'?'clickable':''">{{item.FCJCount}}</td>
                       <td>{{(item.CJRate).toFixed(2)}}%</td>
                     </tr>
                   </tbody>
@@ -58,6 +60,8 @@
 // import { Selector ,Group } from "vux"
 import { XTable, Selector ,Group  ,InlineLoading } from 'vux'
 import charts from "../charts/charts"
+import datepicker from '@/components/common/datepicker'
+import datepickerCmData from '@/mixins/datepicker'
 export default {
   name: '',
   mounted(){
@@ -70,6 +74,7 @@ export default {
     }
     this.getData();
     window.addEventListener("popstate", ()=> {
+        if(this.$route.name!='analysiseffect')return;
         // console.log("我监听到了浏览器的返回按钮事件啦");//根据自己的需求实现自己的功能
         if(this.rankType=="公司") return;
         if(this.rankType=="员工"){
@@ -82,8 +87,9 @@ export default {
         this.getData();
       }, false);
   },
+  mixins:[datepickerCmData],
   components:{
-    XTable, Selector ,Group,charts,InlineLoading
+    XTable, Selector ,Group,charts,InlineLoading,datepicker
   },
   computed:{
     echartsOptions(){
@@ -95,11 +101,11 @@ export default {
                       type: 'shadow'
                   }
               },
-              legend: {
-                  data:this.title,
-                  top:-5,
-                  right:10
-              },
+              // legend: {
+              //     data:this.title,
+              //     top:-5,
+              //     right:10
+              // },
               color:['#51C6EF','#F9C268'],
               grid: {
                     top: 35,
@@ -178,6 +184,9 @@ export default {
           }
     }
   },
+  activated() {
+    this.getData();
+  },
    props:['dateType'],
   data(){
     return{
@@ -213,6 +222,31 @@ export default {
     }
   },
   methods:{
+    toTranslate(item,type){
+      if(this.rankType!='员工')return;
+      // console.log(item);
+      // console.log(type);
+      let dateType;
+      this.activeType=="本月"?dateType="月":dateType="年";
+      let title;
+      switch(type){
+        case 'OppNewAdd':title=`商机新增(${dateType})`;break;
+        case 'OppFollow':title=`商机跟进(${dateType})`;break;
+        case 'OppBeSign':title=`商机待签约(${dateType})`;break;
+        case 'OppDeal':title=`商机成交(${dateType})`;break;
+        case 'OppNoDeal':title=`商机非成交(${dateType})`;break;
+      }
+      this.$router.push({
+        name:'zhsj',
+        params:{
+          title:title,
+          type:type,
+          id:item.AreaGUID,
+          dateType:dateType,
+          date:`${this.dateRange[0]}~${this.dateRange[1]}`
+        }
+      })
+    },
     pushState(){
       window.history.pushState(null, null, "");
     },
@@ -226,7 +260,10 @@ export default {
       this.$http.post("/api/EnergizeSaleBulletin/EfficacyOpportunitiesTree",{
           NodeGUID:this.id,
           GroupBy:this.rankType,
-          DateType:type
+          // DateType:type,
+
+          sdate:this.dateRange[0],
+          edate:this.dateRange[1]
       })
       .then((res)=>{
         // console.log(res)
@@ -249,17 +286,18 @@ export default {
       this.getData();
     },
     getDetail(item){
-      // console.log(item.NodeGUID)
+      // console.log(item)
+      if(this.rankType=="员工"){
+        return ;
+      }
       this.id=item.AreaGUID;
       if(this.rankType=="公司"){
-        this.tempId=item.NodeGUID;
+        this.tempId=item.AreaGUID;
         this.rankType="部门";
         this.pushState();
       }else if(this.rankType=="部门"){
         this.rankType="员工";
         this.pushState();
-      }else if(this.rankType=="员工"){
-        return ;
       }
       this.getData();
     }

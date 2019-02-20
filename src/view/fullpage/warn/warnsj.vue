@@ -1,6 +1,6 @@
 <template>
 
-  <div id="shangji" class="" style="height:100%">
+  <div id="shangji" class="" style="height:100vh">
         <div class="header clearfix">
           <div class="left" style="width: 97%;">
             <search ref="search" v-model="key" :autoFixed="false"  @on-submit="sub" placeholder="搜索商机、客户名称或者商机主责人"></search>
@@ -18,7 +18,7 @@
         <div class="content" id="scroll-wrap">
           <template v-if="!loading2">
             <div id="scroll-box">
-                <list :data="datas"></list>
+                <list :data="datas"  @finishFP="getData(true)"></list>
                 <p class="text_center" v-if="loading" style="padding:9px 0">
                   <inline-loading></inline-loading>
                   <span style="color:#9d9d9d">数据加载中</span>
@@ -154,7 +154,7 @@ export default {
       this.$http.post("/api/EnergizaSalesOpportunities/GetConditionList",{
         OpportunitiesName :this.key,
         PageIndex:this.page,
-        PageSize:50,
+        PageSize:15,
         StageGUIDMultipleChoice:this.condition.status,
         TypeGUIDMultipleChoice:this.condition.types,
         ProductCodeMultipleChoice:this.condition.products,
@@ -171,7 +171,9 @@ export default {
 
         DepartmentGUID:this.$route.params.id,
         WarningType:this.$route.params.type,
-        CreateTime:current
+        CreateTime:this.$route.params.type=='OverPredictTradeTime'?'':this.$route.params.date,
+        PredictTradeTime:this.$route.params.type=='OverPredictTradeTime'?this.$route.params.date:''
+        // CreateTime:current
       })
       .then((res)=>{
 

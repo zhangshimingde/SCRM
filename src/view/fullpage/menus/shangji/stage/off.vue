@@ -19,14 +19,14 @@
           </div>
         </cell-box>
 
-        
+
       </group>
 
       <div class="absolute btn-wrap clearfix">
         <!-- <div class="cancel left" @click="closed">取消</div> -->
         <div class="confirm " style="width:100%" @click="go">确认发起</div>
       </div>
-      
+
 
       <!-- 选择上级确认人 -->
       <div v-transfer-dom>
@@ -53,10 +53,10 @@ export default {
     this.getdefaultzzr();
     // document.title="发起审批";
     // 自定义返回事件
-     window.history.pushState(null, null, ""); 
-     window.addEventListener("popstate", ()=> { 
+     window.history.pushState(null, null, "");
+     window.addEventListener("popstate", ()=> {
         this.closed();
-      }, false); 
+      }, false);
   },
   destroyed(){
     // document.title="修改商机阶段"
@@ -123,7 +123,7 @@ export default {
           }
         })
         .then((res)=>{
-          console.log(res)
+          // console.log(res)
           this.peopleId=res.Data.UserGUID;
           this.people=res.Data.UserName_Chn;
           this.defaultQrr={
@@ -133,7 +133,7 @@ export default {
         })
     },
     choseSinglePeopleFinish(params){  //单选人完毕(主责人和上级确认人)
-      console.log(params)
+      // console.log(params)
       this.chosepeople=false;
       if(params.id==this.zzrId){
         this.$vux.alert.show({
@@ -142,7 +142,7 @@ export default {
         })
         return;
       }
-      
+
       this.peopleId=params.id;
       this.people=params.name;
     },
@@ -161,7 +161,7 @@ export default {
           });
           return;
         }
-   
+
 
 
         var params={

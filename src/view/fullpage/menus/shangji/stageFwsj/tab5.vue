@@ -12,9 +12,9 @@
             </div>
         </cell-box>
           <!-- <checklist :options="options" label-position="right"  v-model="value" @on-change="change"></checklist> -->
-        
+
       </group>
-      
+
       <template v-if="!loading">
         <div id="ht-list" v-if="htList.length">
           <group style="" v-for="(item,index) in htList" :key="index">
@@ -59,7 +59,7 @@
           <span style="color:#9d9d9d">数据加载中</span>
         </div>
       </template>
-      
+
       <foot @prev="prev" @next="next" :isLast="true" @closeSj="closeSj" stageName="成交关闭" :canNext="canNext" :canPrev="canPrev"></foot>
     </div>
 </template>
@@ -76,7 +76,7 @@ export default {
         this.$cmBus.$off('refreshLastStage');
   },
   mounted(){
-    console.log(this.itemData.ListChrlid[0].IsChecked)
+    // console.log(this.itemData.ListChrlid[0].IsChecked)
     // this.itemData.ListChrlid[0].IsChecked=true;
     this.item0=this.itemData.ListChrlid[0].IsChecked;
     this.getHtData();
@@ -112,7 +112,7 @@ export default {
       this.loading=true;
       this.$http.get("/api/EnergizaSalesOpportunities/OppRelationContractListHas?OppGUID="+this.$route.params.id)
       .then((res)=>{
-        console.log(res);
+        // console.log(res);
         this.loading=false;
         res.Data.map((el)=>{
           el.SignDate=el.SignDate?el.SignDate.substring(0,10):el.SignDate;
@@ -139,7 +139,7 @@ export default {
             })
             return;
       }
-      
+
       this.$vux.confirm.show({
         title: '友情提示',
         content: '确认删除此合同？',
@@ -164,11 +164,11 @@ export default {
               this.$router.push({
                   name:"shangjicontract",
                   id:this.$route.params.id
-              })  
+              })
     }
   },
   watch:{
-    item0(val,oldval){ 
+    item0(val,oldval){
       if(oldval===null){return;}
       this.changeCheck(this.itemData.ListChrlid[0].stageDetailID,val)
     },

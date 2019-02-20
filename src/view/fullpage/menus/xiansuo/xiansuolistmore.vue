@@ -18,29 +18,32 @@
                               <span class="left stage" v-if="listdata.IsNew" style="background:#E75647">新</span>
                               <p class="left title " style="width:50%">
                                 {{listdata.ContactName}}
-                                <template v-if="listdata.Sex">
+                              </p>
+                              <template v-if="listdata.Sex">
                                     <i class="iconfont icon-xingbienan" style="color:#5EB7E8" v-if="listdata.Sex=='男'"></i>
                                     <i class="iconfont icon-xingbienv" v-else style="color:#F7867B"></i>
-                                </template>
-                              </p>
+                              </template>
                             </div>
                             <span class="CreateTime left">{{listdata.CreateTime.substring(0,10)}}</span>
 
                           </div>
-                          <div class="people text-over">
+                          <!-- <div class="people text-over">
                             需求描述：{{listdata.RequirementDesc}}
+                          </div> -->
+                          <div class="people text-over">
+                            <i class="iconfont icon-gongsi" style="margin-right:0.2rem"></i><span v-html="listdata.CustomerName?listdata.CustomerName:'--'"></span>
                           </div>
                           <div class="clearfix">
                               <!-- <div class="money left text-over" style="padding-right:0.8rem;width:40%;box-sizing:border-box">
                                 <i class="iconfont icon-dianhua" style="margin-right:0rem"></i>
                                 <span style="color:#666">{{listdata.Opportunity.Telephone}}</span>
                               </div> -->
-                              <div class="kehu left text-over relative" style="width:60%;box-sizing:border-box;" v-if="listdata.CustomerName">
-                                  <i class="iconfont icon-gongsi" style="margin-right:0.2rem"></i><span v-html="listdata.CustomerName"></span>
+                              <div class="kehu left text-over relative" style="width:60%;box-sizing:border-box;">
+                                  <i class="iconfont icon-ren" style="margin-right:0.2rem"></i><span v-html="listdata.Followers?listdata.Followers:'--'"></span>
                               </div>
                               <div class="right" style="width:40%;">
                                 <a class="right guanzhu" @click.stop style="color:#3079D5;width:auto" :href="'tel:'+listdata.Telephone"><i class="iconfont icon-dianhua" style="margin-right:0"></i>呼叫</a>
-                                <span class="right guanzhu" style="color:#3079D5;margin-right:1rem;width:auto"  @click.stop="fenpei(listdata,index2)">
+                                <span class="right guanzhu" v-show="showZP" style="color:#3079D5;margin-right:1rem;width:auto"  @click.stop="fenpei(listdata,index2)">
                                   <i class="iconfont icon-fenpeianniu" style="margin:0"></i>指派
                                 </span>
                               </div>
@@ -92,7 +95,7 @@ export default {
       return value.substring(0,10)
     }
   },
-  props:["data"],
+  props:["data",'showZP'],
   data () {
     return {
       chosepeoplemutiple:false,
@@ -134,6 +137,7 @@ export default {
               title: '友情提示',
               content: '指派成功！'
             })
+            this.$emit('finishZP');
         }else{
           this.$vux.alert.show({
               title: '友情提示',
