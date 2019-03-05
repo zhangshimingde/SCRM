@@ -47,6 +47,13 @@
                       <div class="people-pic cm-bac" v-else style="background-image:url(static/img/avater.png);background-size:80%;background-repeat:no-repeat;background-position:center" ></div>
                       <p class="people-name">{{swiperInfo2.zzr.name}}</p>
                     </li>
+
+                    <li  @click="getConcat" style="color:#007aff">
+                      <div class="people-pic relative">
+                        <i class="iconfont icon-pinglun absolute" style="top:50%;left:50%;transform:translate(-50%,-50%)"></i>
+                      </div>
+                      <p class="people-name" style="overflow:unset">发起会话</p>
+                    </li>
                   </ul>
                 </div>
 
@@ -75,10 +82,7 @@
         <div class="panel-wrap"  id="tab-data">
           <scroller lock-y :scrollbar-x=false>
           <div  class="clearfix" id="panel-wrap" :style="{'width':(tabList.length+1)*70+'px'}">
-            <!-- <span class="panel-link" @click="getConcat">
-              <i class="iconfont icon-yunweifuwu c-i" style="color:#3079D5"></i> <br>
-              <span class=" c-t">发起会话</span> <br>
-            </span> -->
+
             <template  v-if="!loading2" >
               <div v-for="(item,index) in tabList" v-if="tabList.length>0" :key="index">
                 <router-link :to="{name:'lianxiren',params:{type:'kehu',id:$route.params.id}}" class="panel-link" v-if="item.Key=='lianxiren'">
@@ -168,7 +172,7 @@ import followrecord from "../../../../components/common/followrecord"
 import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../components/common/checkpeoplemultiple';
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
-import wxSDK from '@/assets/js/global.js'
+import wxSDK,{Utils} from '@/assets/js/global.js'
 import 'swiper/dist/css/swiper.css'
 export default {
   name: '',
@@ -234,7 +238,8 @@ export default {
         zzr:{
           name:"",
           id:"",
-          avater:""
+          avater:"",
+          code:""
         },
         team:[],
         canEdit:true
@@ -244,7 +249,14 @@ export default {
   },
   methods:{
     getConcat(){
-      wxSDK.getConcat('客户',this.swiperInfo1.name);
+      let defaultChatUserCode=[this.swiperInfo2.zzr.code];
+      this.swiperInfo2.team.map(el=>{
+        defaultChatUserCode.push(el.code);
+      });
+
+      console.log(Utils.noRepeatArray(defaultChatUserCode))
+
+      wxSDK.getConcatReady(1,this.$route.params.id,this.swiperInfo1.name,Utils.noRepeatArray(defaultChatUserCode));
     },
     choseTeamer(){
       this.checkpeoplemultiple=true;
@@ -265,7 +277,7 @@ export default {
       this.chosepeople=true;
       this.beChose=[this.swiperInfo2.zzr.id];
     },
-    getInit(){  //获取商机信息
+    getInit(){  //获取客户信息
       this.loading=true;
       // this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetail",{
       this.$http.post("/api/EnergizaSaleKHInfoController/GetKhDetailPC",{
@@ -293,14 +305,17 @@ export default {
           this.swiperInfo2.zzr={
               name:res.Data.KhresponsePeople.UserName_Chn,
               id:res.Data.KhresponsePeople.UserGUID,
-              avater:res.Data.KhresponsePeople.UserIcon
+              avater:res.Data.KhresponsePeople.UserIcon,
+              code:res.Data.KhresponsePeople.UserName
           }
           //经营团队
+          this.swiperInfo2.team=[];
           res.Data.KhManageTeam.map((el)=>{
             this.swiperInfo2.team.push({
               name:el.UserName,
               id:el.UserGUID,
-              avater:el.UserIcon
+              avater:el.UserIcon,
+              code:el.UserCode
             })
           })
       })
@@ -323,7 +338,8 @@ export default {
             this.swiperInfo2.zzr={
               name:data.UserName_Chn,
               id:data.UserGUID,
-              avater:data.UserIcon
+              avater:data.UserIcon,
+              code:data.UserName
             }
       })
 
@@ -369,7 +385,8 @@ export default {
         this.swiperInfo2.team.push({
           name:el.name,
           id:el.id,
-          avater:""
+          avater:"",
+          code:""
         })
 
       })
@@ -378,6 +395,7 @@ export default {
       this.swiperInfo2.team.map((el)=>{
         this.getUserData(el.id,(data)=>{
           el.avater=data.UserIcon;
+          el.code=data.UserName;
         })
       })
 

@@ -155,7 +155,43 @@ route.beforeEach(function (to, from, next) {
   var timer2 = setInterval(function () {
     if (localStorage.getItem("token")) {
       clearInterval(timer2);
-      next();
+      // next();
+
+      setTimeout(function () {
+        store.commit('updateLoadingStatus', { isLoading: false })
+      }, 300)
+      //商机/客户/联系人/线索详情页面跳转时拦截已经被删除的数据
+      if(to.name=='kehudetail'||to.name=='shangjidetail'||to.name=='xiansuodetail'||to.name=='lianxirendetail'){ //详情页面找不到对应的id数据,跳到无数据页面
+        let type=to.name.replace('detail','');
+        let typemodule,typeName;
+        switch(to.name){
+          case 'kehudetail':typemodule=4;typeName='客户';break;
+          case 'shangjidetail':typemodule=2;typeName='商机';break;
+          case 'xiansuodetail':typemodule=1;typeName='线索';break;
+          case 'lianxirendetail':typemodule=3;typeName='联系人';break;
+        }
+        axios.post("/api/EnergizaSaleKHInfoController/PrimaryKeyVerification",{
+          GUID:to.params.id,
+          TYPE:typemodule  //(1：线索、2：商机、3：联系人、4：客户)
+        })
+        .then(response=>{
+          if(response.Message=='datanotfound'&&!response.Success){
+              Vue.$vux.alert.show({
+                title: '友情提示',
+                content: `此条${typeName}数据不存在或已被删除！`,
+                onHide(){
+                  route.push({name:from.name});
+                }
+              })
+          }else{
+            next();
+          }
+        })
+      }else{
+        next();
+      }
+      // end
+
     }
   }, 10)
 

@@ -254,8 +254,8 @@ export default {
         this.way={name:data.ChannelName,id:data.ChannelID};
         this.area={name:data.AreaName,id:data.AreaID};
 
-        let typeNameArr=data.OpportunityTypeName.split(',');
-        let typeIdArr=data.OpportunityTypeID.split(',');
+        let typeNameArr=data.OpportunityTypeName?data.OpportunityTypeName.split(','):[];
+        let typeIdArr=data.OpportunityTypeID?data.OpportunityTypeID.split(','):[];
         this.xstype=typeNameArr.map((el,index)=>{
           return {
             name:el,
@@ -269,8 +269,8 @@ export default {
               }
           })
         })
-        let productsNameArr=data.ProductName.split(',');
-        let productsIdArr=data.ProductID.split(',');
+        let productsNameArr=data.ProductName?data.ProductName.split(','):[];
+        let productsIdArr=data.ProductID?data.ProductID.split(','):[];
         this.products=productsNameArr.map((el,index)=>{
           return {
             name:el,

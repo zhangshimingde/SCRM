@@ -448,6 +448,12 @@ export default {
            this.IsManager?this.isShenhe=false:this.isShenhe=true;
            if(!this.IsManager){
               this.getdefaultqrr(params.id);
+           }else{
+             this.qrr={
+                name:"",
+                avater:"",
+                id:""
+              };
            }
         })
 
@@ -513,7 +519,16 @@ export default {
 
         this.IsManager=res.Data.IsManager;
         this.IsManager?this.isShenhe=false:this.isShenhe=true;
-        this.getdefaultqrr(res.Data.UserGUID);
+        if(!this.IsManager){
+          this.getdefaultqrr(res.Data.UserGUID);
+        }else{
+          this.qrr={
+            name:"",
+            avater:"",
+            id:""
+          };
+        }
+
 
       })
     },
@@ -563,7 +578,6 @@ export default {
     },
     goSubmit(){
       // alert(this.qy)
-      // console.log(JSON.stringify(this.team))
       // console.log(this.name,this.kehu.name,this.zzr.name,this.sjtype.name,this.money,this.date,JSON.stringify(this.products),this.ways.name,this.qrr.name,
       //   JSON.stringify(this.team),this.isShenhe,this.qy)
       //判断商机的客户名称为空提示
@@ -697,7 +711,11 @@ export default {
     isShenhe(val){
       // console.log(val)
       if(!val){
-        this.qrr=this.defaultqrr;
+        this.qrr={
+          name:"",
+          avater:"",
+          id:""
+        };
       }
     }
   }

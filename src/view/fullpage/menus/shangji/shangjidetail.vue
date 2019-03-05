@@ -51,6 +51,13 @@
                       <div class="people-pic cm-bac" v-else style="background-image:url(static/img/avater.png);background-size:80%;background-repeat:no-repeat;background-position:center" ></div>
                       <p class="people-name">{{swiperInfo2.zzr.name}}</p>
                     </li>
+
+                    <li  @click="getConcat" style="color:#007aff">
+                      <div class="people-pic relative">
+                        <i class="iconfont icon-pinglun absolute" style="top:50%;left:50%;transform:translate(-50%,-50%);"></i>
+                      </div>
+                      <p class="people-name" style="overflow:unset">发起会话</p>
+                    </li>
                   </ul>
                 </div>
 
@@ -186,6 +193,7 @@ import checkpeople from '../../../../components/common/checkpeople';
 import checkpeoplemultiple from '../../../../components/common/checkpeoplemultiple';
 import off from "./stage/off";
 import hangup from "./hangup";
+import wxSDK,{Utils} from '@/assets/js/global.js'
 import { swiper, swiperSlide } from 'vue-awesome-swiper'
 import 'swiper/dist/css/swiper.css'
 export default {
@@ -258,7 +266,8 @@ export default {
         zzr:{
           name:"",
           id:"",
-          avater:""
+          avater:"",
+          code:""
         },
         team:[]
       },
@@ -275,6 +284,16 @@ export default {
       }
     },
   methods:{
+    getConcat(){
+      let defaultChatUserCode=[this.swiperInfo2.zzr.code];
+      this.swiperInfo2.team.map(el=>{
+        defaultChatUserCode.push(el.code);
+      });
+
+      console.log(Utils.noRepeatArray(defaultChatUserCode))
+
+      wxSDK.getConcatReady(2,this.$route.params.id,this.swiperInfo1.name,Utils.noRepeatArray(defaultChatUserCode));
+    },
     choseZzr(){
       this.chosepeople=true;
       this.beChose=[this.swiperInfo2.zzr.id];
@@ -533,14 +552,17 @@ export default {
           this.swiperInfo2.zzr={
               name:res.Data.Userinfo.UserName_Chn,
               id:res.Data.Userinfo.UserGUID,
-              avater:res.Data.Userinfo.UserIcon
+              avater:res.Data.Userinfo.UserIcon,
+              code:res.Data.Userinfo.UserName
           }
           //经营团队
+          this.swiperInfo2.team=[];
           res.Data.list_manage.map((el)=>{
             this.swiperInfo2.team.push({
               name:el.UserName,
               id:el.UserGUID,
-              avater:el.UserIcon
+              avater:el.UserIcon,
+              code:el.UserCode
             })
           })
       })
@@ -552,7 +574,8 @@ export default {
             this.swiperInfo2.zzr={
               name:data.UserName_Chn,
               id:data.UserGUID,
-              avater:data.UserIcon
+              avater:data.UserIcon,
+              code:data.UserName
             }
 
             this.$cmBus.$emit("refreshSjList");
@@ -599,7 +622,8 @@ export default {
         this.swiperInfo2.team.push({
           name:el.name,
           id:el.id,
-          avater:""
+          avater:"",
+          code:""
         })
 
       })
@@ -608,6 +632,7 @@ export default {
       this.swiperInfo2.team.map((el)=>{
         this.getUserData(el.id,(data)=>{
           el.avater=data.UserIcon;
+          el.code=data.UserName;
         })
       })
 

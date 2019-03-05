@@ -12,11 +12,13 @@
                     <!-- 手动录入的记录 -->
                     <template v-if="item.Type==3">
                       <div class="content-type2">
-                        <p class="clearfix">
+                        <div class="clearfix">
+
                           <span class="left time">{{item.time}} <span v-if="item.SourcePort" style="margin-left:10px">发布于[{{item.SourcePort}}]</span> </span>
-                          <i class="iconfont icon-pinglun right" @click="recomment(item)" style="color:#3079D5"></i>
-                          <i class="iconfont icon-shanchu right"  v-if="item.LastEditor==myCode" @click="delet('跟进记录',item)" style="color:#FF7E8E;margin-right:15px"></i>
-                        </p>
+                          <i class="iconfont icon-pinglun right" v-if="item.OnReply==1" @click="recomment(item)" style="color:#3079D5"></i>
+                          <i class="iconfont icon-shanchu right"  v-if="item.LastEditor==myCode&&item.OnReply==1" @click="delet('跟进记录',item)" style="color:#FF7E8E;margin-right:15px"></i>
+                        </div>
+                        <p v-if="item.FollowDescription" style="font-size:0.8rem;color:#666">{{item.FollowDescription}}</p>
                         <div class="user-info clearfix" style="margin-top:5px">
                           <div class="people-pic cm-bac left" v-if="item.UserIcon" style="background-size:cover;background-position:center" :style="{backgroundImage:'url('+item.UserIcon+')'}"></div>
                           <div class="people-pic cm-bac left" v-else style="background-image:url(static/img/avater.png);background-size:80%;background-repeat:no-repeat;background-position:center" ></div>
@@ -264,7 +266,8 @@ export default {
           this.$http.post("/api/AjaxFollowLogController/AddFollowReplyNew",{
             ReplyContent:param.content,
             ChangeGUID:this.recordId,
-            RelationGUID:this.id
+            RelationGUID:this.id,
+            SourceType:this.ProType
           })
           .then((res)=>{
             // console.log(res)
@@ -297,15 +300,17 @@ export default {
       this.recordId=item.FlowerGUID;
     },
     changeCash(item){//费用弹窗
+      if(item.LastEditor!=this.myCode||item.OnReply!=1)return;
       this.cashShow=true;
       this.recordId=item.FlowerGUID;
     },
     changeRecordType(item){//发表类型弹窗
+      if(item.LastEditor!=this.myCode||item.OnReply!=1)return;
       this.showPopupPicker=true;
       this.recordId=item.FlowerGUID;
     },
     popupChange(params){
-      console.log(params[0])
+      // console.log(params[0])
       this.$vux.loading.show({
          text: '正在提交..'
         })

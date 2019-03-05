@@ -3,9 +3,9 @@
     <div class="header clearfix">
       <search ref="search" v-model="key" @on-submit="sub" :autoFixed="false"  placeholder="搜索客户"></search>
     </div>
-    <div class="contents">
+    <div class="contents" style="padding:0">
       <template v-if="!loading">
-          <ul id="res-list" class="shangjilist"  v-infinite-scroll="loadMore" infinite-scroll-disabled="loading2" infinite-scroll-distance="40">
+          <ul id="res-list" class="shangjilist"  v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading2" infinite-scroll-distance="40">
             <template  v-if="data.length>0">
               <group class="sj">
                 <cell-box v-for="(listdata,index2) in data" :key="index2" >
@@ -28,6 +28,10 @@
                   </div>
                 </cell-box>
               </group>
+              <p class="text_center" style="padding:10px 0" v-show="loading2">
+                <inline-loading></inline-loading>
+                <span style="color:#9d9d9d">数据加载中</span>
+              </p>
             </template>
             <template v-else >
               <p class="text_center" style="padding:40px 0">
@@ -44,7 +48,7 @@
       </template>
     </div>
 
-    <div class="fixed cancel-btn" @click="cancel">取消</div>
+    <div class="cancel-btn" @click="cancel">取消</div>
   </div>
 
 </template>
@@ -92,7 +96,7 @@ export default {
       this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
         FullName:this.key,
         PageIndex:this.page,
-        PageSize:100,
+        PageSize:50,
         KHGUID:this.id
       })
       .then((res)=>{

@@ -183,6 +183,14 @@
             </span>
           </div>
         </cell-box>
+        <cell-box is-link>
+          <div class="form-item clearfix" :class="canEdit?'readw':'reado'" @click="openSelect('district')">
+            <span class="left banner">区/县</span>
+            <span class="right content">
+                {{district.name}}
+            </span>
+          </div>
+        </cell-box>
         <cell-box>
           <div class="form-item clearfix" :class="canEdit?'readw':'reado'">
               <x-input title="总机" :readonly="!canEdit" @on-change="updateField('Phone,'+zj)" v-model="zj" placeholder="选填" :show-clear="false" text-align="right"></x-input>
@@ -247,7 +255,8 @@
 
 
       <!-- 选择客户 -->
-      <kehulist v-if="chosekehu" :id="$route.params.id" @choseFinish="choseKehuFinish"></kehulist>
+      <!-- <kehulist v-if="chosekehu" :id="$route.params.id" @choseFinish="choseKehuFinish"></kehulist> -->
+      <sjkh  v-if="chosekehu" :id="$route.params.id" @choseSJKehuFinish="choseSJKehuFinish"></sjkh>
     </form>
 </template>
 
@@ -256,10 +265,11 @@ import {XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group
 import danx from '../../../../../components/common/choseDanX'
 import danxs from '../../../../../components/common/choseDanXS'
 import kehulist from '../kehulist'
+import sjkh from '../sjkh'
 export default {
   name: '',
   components:{
-   XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading,XTextarea ,danx,danxs,kehulist
+   XInput,Calendar ,XSwitch ,TransferDom,Popup ,PopupRadio , CellBox ,Group ,InlineLoading,XTextarea ,danx,danxs,kehulist,sjkh
   },
   directives: {
     TransferDom
@@ -359,6 +369,10 @@ export default {
         name:"",
         id:""
       },
+      district:{
+        name:"",
+        id:""
+      },
       zj:"",
       cz:"",
       yb:"",
@@ -367,7 +381,7 @@ export default {
       remark:"",
       provinceList:[],
       cityList:[],
-
+      districtList:[],
       partFour:{
         createPeople:"",
         createTime:""
@@ -398,18 +412,24 @@ export default {
         id:data.ParentKHGUID
       };
 
-      this.kehuType=data.CustomerType.split(',').map(el=>{
-        return {
-                  name:el,
-                  id:el
-                }
-      });
-      this.kehuStatus=data.CustomerFormats.split(',').map(el=>{
-        return {
-                  name:el,
-                  id:el
-                }
-      });
+      if(data.CustomerType){
+          this.kehuType=data.CustomerType.split(',').map(el=>{
+            return {
+                      name:el,
+                      id:el
+                    }
+          });
+      }
+
+      if(data.CustomerFormats){
+        this.kehuStatus=data.CustomerFormats.split(',').map(el=>{
+          return {
+                    name:el,
+                    id:el
+                  }
+        });
+      }
+
 
       let tempkehuType=this.kehuType.map(el=>el.id);
       tempkehuType.indexOf("存量地产")>-1?this.showKehuStatus=true:this.showKehuStatus=false;
@@ -443,11 +463,13 @@ export default {
 
       this.op=data.IsBuy;
 
-      this.city.name=data.CityName;
-      this.city.id=data.City;
-      this.province.name=data.ProvinceName;
-      this.province.id=data.Province;
 
+      this.province.name=data.ProvinceName;
+      this.province.id=data.ProvinceID;
+      this.city.name=data.CityName;
+      this.city.id=data.CityID;
+      this.district.name=data.DistrictName;
+      this.district.id=data.DistrictID;
       this.zj=data.Phone;
       this.cz=data.Fax;
       this.yb=data.ZipCode;
@@ -486,6 +508,7 @@ export default {
       // 获取省份城市列表
       this.getProvince();
       this.getCity(this.province.id);
+      this.getDistrict(this.city.id);
 
       setTimeout(()=>{
           this.isFirstTime=false;
@@ -511,7 +534,7 @@ export default {
       if(!province) return;
       this.$http.get("/api/EnergizeSaleCommon/GetCity",{
         params:{
-          Province:province
+          ProvinceID:province
         }
       }).
       then((res)=>{
@@ -521,6 +544,28 @@ export default {
             this.cityList.push({
               id:el.CityID,
               name:el.City,
+              chose:false
+            })
+        });
+
+        if(fn) fn();
+
+      })
+    },
+    getDistrict(city,fn){
+      if(!city) return;
+      this.$http.get("/api/EnergizeSaleCommon/GetDistrict",{
+        params:{
+          CityID:city
+        }
+      }).
+      then((res)=>{
+        // console.log(res)
+        this.districtList=[];
+        res.Data.map((el)=>{
+            this.districtList.push({
+              id:el.AreaID,
+              name:el.Area,
               chose:false
             })
         });
@@ -599,6 +644,7 @@ export default {
         case 'levelTwo':this.cmParamList=this.levelTwoList;break;
         case 'province':this.cmParamList=this.provinceList;break;
         case 'city':this.cmParamList=this.cityList;break;
+        case 'district':this.cmParamList=this.districtList;break;
         case 'kehuType':this.cmParamList=this.kehuTypeList;this.multiple="multiple";break;
         case 'kehuStatus':this.cmParamList=this.kehuStatusList;this.multiple="multiple";break;
       }
@@ -655,22 +701,32 @@ export default {
         case 'province':this.province={
                         name:params.name,
                         id:params.id
-                      };field="Province";val=params.id;
-                      this.getCity(params.id,()=>{
-                        this.city={
-                          name:this.cityList[0].name,
-                          id:this.cityList[0].id
-                        }
-
-                        field="City";val=this.cityList[0].id;
-                        this.changeInfo(field,val);
-                        return;
-                      });
+                      };
+                      this.city={name:'',id:''};
+                      this.district={name:'',id:''};
+                      this.cityList=[];
+                      this.districtList=[];
+                      this.getCity(params.id);
+                      this.changeInfoMultiple([{FieldName:"Province",Value:this.province.id},{FieldName:"City",Value:this.city.id},{FieldName:"District",Value:this.district.id}]);
+                      return;
                       break;
         case 'city':this.city={
                         name:params.name,
                         id:params.id
-                      };field="City";val=params.id;break;
+                      };
+                      this.district={name:'',id:''};
+                      this.districtList=[];
+                      this.getDistrict(params.id);
+                      this.changeInfoMultiple([{FieldName:"City",Value:this.city.id},{FieldName:"District",Value:this.district.id}]);
+                      return;
+                      break;
+        case 'district':this.district={
+                        name:params.name,
+                        id:params.id
+                      };
+                      this.changeInfoMultiple([{FieldName:"District",Value:this.district.id}]);
+                      return;
+                      break;
       }
       // console.log(field+","+val)
       if(this.cmParamType=="khLevel"&&params.name!="集团公司"){
@@ -702,7 +758,16 @@ export default {
         this.changeInfo("CustomerFormats",ids.join(','));
       }
     },
-    choseKehuFinish(params){ //选择上级公司完成
+    choseSJKehuFinish(params){ //选择上级公司完成(新版)
+      this.chosekehu=false;
+      if(!params) return;
+      this.parentKehu={
+        name:params.name,
+        id:params.id
+      }
+      this.changeInfoMultiple([{FieldName:"KHCompanyLevelCode",Value:this.khLevel.id},{FieldName:"ParentKHGUID",Value:this.parentKehu.id}]);
+    },
+    choseKehuFinish(params){ //选择上级公司完成(旧版)
       this.chosekehu=false;
       if(!params) return;
       this.parentKehu={
@@ -711,6 +776,41 @@ export default {
       }
       this.changeInfo("KHCompanyLevelCode",this.khLevel.id);
       this.changeInfo("ParentKHGUID",this.parentKehu.id);
+    },
+    changeInfoMultiple(params,fn){
+      this.$vux.loading.show({
+             text: '正在提交..'
+            })
+      this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfoMult",{
+        Param:params,
+        KHGUID:this.detailInfo.entity.KHGUID
+      })
+      .then((res)=>{
+        this.$vux.loading.hide();
+          if(res.Success){
+            // this.$vux.toast.text('修改成功！', 'top')
+              if(fn)fn();
+              this.$cmBus.$emit("refreshKhList");
+              this.$vux.alert.show({
+                title: '友情提示',
+                content: res.Message
+              })
+
+
+          }else{
+            var _this=this
+            this.$vux.alert.show({
+                title: '友情提示',
+                content: res.Message,
+                onHide(){
+                  setTimeout(()=>{
+                      window.location.reload();
+                  }, 1000)
+                }
+              })
+
+          }
+      })
     },
     changeInfo(field,val,fn){
       if(!val&&field=="SortName"){
@@ -738,17 +838,16 @@ export default {
         }
 
       }
-      // this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfo",{
-      //   FieldName:field,
-      //   Value:val,
-      //   KHGUID:this.detailInfo.entity.KHGUID
-      // })
       let params=[{FieldName:field,Value:val}];
+      // this.$vux.loading.show({
+      //        text: '正在提交..'
+      //       })
       this.$http.post("/api/EnergizaSaleKHInfoController/UpdateKhInfoMult",{
         Param:params,
         KHGUID:this.detailInfo.entity.KHGUID
       })
       .then((res)=>{
+          // this.$vux.loading.hide();
           if(res.Success){
             // this.$vux.toast.text('修改成功！', 'top')
               if(fn)fn();

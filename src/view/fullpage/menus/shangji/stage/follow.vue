@@ -56,8 +56,8 @@
           </div>
           <!-- 发表记录，评论 -->
           <div v-transfer-dom>
-            <popup v-model="isPublish" @on-hide="openYy=false"  :popup-style="{background:'white',zIndex:10}" position="bottom" height="50%">
-              <publish :chosePoepleType='1' @pubFinish="pubFinish" :openYy="openYy"></publish>
+            <popup v-model="isPublish" @on-hide="openYy=false"  :popup-style="{background:'white',zIndex:501}" position="bottom" height="50%">
+              <publish :chosePoepleType='1' @pubFinish="pubFinish" @pubCancel="isPublish=false" :openYy="openYy"></publish>
             </popup>
           </div>
         </div>
@@ -117,11 +117,12 @@ export default {
          text: '正在提交..'
         })
       this.$http.post("/api/AjaxFollowLogController/AddFollowReplyNew",{
-        ReplyContent:param,
-        ChangeGUID:this.recordId
+        ReplyContent:param.content,
+        ChangeGUID:this.recordId,
+        RelationGUID:this.$route.params.id,
+        SourceType:1
       })
       .then((res)=>{
-        console.log(res)
         this.$vux.loading.hide()
         if(res.Success){
             this.$vux.alert.show({
@@ -219,7 +220,7 @@ export default {
             }
         }
 
-        console.log(dest);
+        // console.log(dest);
         this.followList=dest;
 
         // this.getAvater(this.followList);//取头像
@@ -271,7 +272,7 @@ export default {
                 })
               })
 
-              console.log(arr)
+              // console.log(arr)
             }
 
           })

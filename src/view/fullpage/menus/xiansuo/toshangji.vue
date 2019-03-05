@@ -482,7 +482,13 @@ export default {
            this.IsManager?this.isShenhe=false:this.isShenhe=true;
            if(!this.IsManager){
               this.getdefaultqrr(params.id);
-           }
+           }else{
+              this.qrr={
+                name:"",
+                avater:"",
+                id:""
+              };
+            }
         })
 
       }
@@ -546,9 +552,17 @@ export default {
             id:res.Data.UserGUID,
          }
 
-         this.IsManager=res.Data.IsManager;
+        this.IsManager=res.Data.IsManager;
         this.IsManager?this.isShenhe=false:this.isShenhe=true;
-        this.getdefaultqrr(res.Data.UserGUID);
+        if(!this.IsManager){
+          this.getdefaultqrr(res.Data.UserGUID);
+        }else{
+          this.qrr={
+            name:"",
+            avater:"",
+            id:""
+          };
+        }
 
       })
     },
@@ -708,7 +722,11 @@ export default {
     isShenhe(val){
       // console.log(val)
       if(!val){
-        this.qrr=this.defaultqrr;
+        this.qrr={
+                name:"",
+                avater:"",
+                id:""
+              };
       }
     }
   }

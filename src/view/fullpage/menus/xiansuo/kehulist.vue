@@ -12,9 +12,9 @@
         <i class="iconfont icon-tianjia" style="font-size:1.5rem;color:#999"></i>
       </span>
     </div>
-    <div class="contents">
+    <div class="contents"   style="padding:0">
       <template v-if="!loading">
-          <ul id="res-list" class="shangjilist"  v-infinite-scroll="loadMore" infinite-scroll-disabled="loading2" infinite-scroll-distance="40">
+          <ul id="res-list" class="shangjilist"  v-infinite-scroll="loadMore" :infinite-scroll-disabled="loading2" infinite-scroll-distance="40">
             <template  v-if="data.length>0">
               <group class="sj">
                 <cell-box v-for="(listdata,index2) in data" :key="index2" >
@@ -37,6 +37,10 @@
                   </div>
                 </cell-box>
               </group>
+              <p class="text_center" style="padding:10px 0" v-show="loading2">
+                <inline-loading></inline-loading>
+                <span style="color:#9d9d9d">数据加载中</span>
+              </p>
             </template>
             <template v-else >
               <p class="text_center" style="padding:40px 0">
@@ -101,7 +105,7 @@ export default {
       this.$http.post("/api/EnergizaSaleKHInfoController/GetHKInfoConditionList",{
         FullName:this.key,
         PageIndex:this.page,
-        PageSize:100
+        PageSize:50
       })
       .then((res)=>{
         // console.log(res.Data);
